@@ -389,6 +389,43 @@
     flex-shrink: 0;
   }
 
+  /* HOTEL UPGRADE TOGGLE */
+  .hotel-upgrade {
+    margin-top: 12px;
+    border: 1px solid rgba(181,123,238,0.3);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .hotel-toggle-btn {
+    width: 100%;
+    background: rgba(181,123,238,0.08);
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--purple);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: none;
+    outline: none;
+    text-align: left;
+    transition: background 0.15s;
+  }
+  .hotel-toggle-btn:hover { background: rgba(181,123,238,0.15); }
+  .hotel-toggle-btn .arrow { font-style: normal; font-size: 10px; transition: transform 0.2s; display: inline-block; }
+  .hotel-toggle-btn.open .arrow { transform: rotate(180deg); }
+  .hotel-upgrade-body { display: none; padding: 10px 12px; border-top: 1px solid rgba(181,123,238,0.2); }
+  .hotel-upgrade-body.open { display: block; }
+  .hotel-name { font-size: 13px; font-weight: 700; color: var(--purple); margin-bottom: 2px; }
+  .hotel-meta { font-size: 11px; color: var(--muted); line-height: 1.6; margin-bottom: 4px; }
+  .hotel-price { font-size: 12px; font-weight: 600; color: var(--amber); margin-bottom: 6px; }
+  .comfort-badge {
+    font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px;
+    background: rgba(181,123,238,0.15); color: var(--purple);
+    border: 1px solid rgba(181,123,238,0.3); white-space: nowrap;
+  }
+
   /* Footer */
   .footer {
     padding: 20px 32px;
@@ -424,6 +461,7 @@
     <span class="badge badge-teal">🚐 FIAT Doblò Maxi Camper</span>
     <span class="badge badge-amber">12 Nights · ~950 km</span>
     <span class="badge badge-red">⚠️ Book Hellissandur NOW</span>
+    <span class="badge" style="background:rgba(181,123,238,0.12);color:var(--purple);border:1px solid rgba(181,123,238,0.3)">🏨 Comfort Upgrades Available</span>
   </div>
 </div>
 
@@ -490,6 +528,20 @@
         <div class="info-row"><span class="label">Highlights</span><span class="value note">Next to Laugardalslaug geothermal pool &amp; botanical garden</span></div>
         <a href="https://www.tjalda.is" target="_blank" class="book-btn">📅 Book on Tjalda</a>
         <a href="https://reykjavikcampsite.is" target="_blank" class="book-btn secondary">🌐 Direct</a>
+        <div class="hotel-upgrade">
+          <button class="hotel-toggle-btn" onclick="toggleHotel(this)">🏨 Comfort Upgrade Option <span class="arrow">▼</span></button>
+          <div class="hotel-upgrade-body">
+            <div class="hotel-name">Centerhotel Arnarhvoll ⭐⭐⭐⭐</div>
+            <div class="hotel-meta">📍 City center · Stunning bay views · Walk everywhere</div>
+            <div class="hotel-price">~$200–280/night</div>
+            <div class="hotel-meta">💡 <strong>Worth it?</strong> After a transatlantic red-eye (land 5:31 AM), a real bed on Night 1 can make the difference. Skip if you want to dive straight into campervan life.</div>
+            <div class="hotel-name" style="margin-top:8px">Budget pick: Cabin Hotel Reykjavik ⭐⭐⭐</div>
+            <div class="hotel-meta">📍 Near Laugardalur Pool · Comfortable &amp; affordable</div>
+            <div class="hotel-price">~$120–160/night</div>
+            <a href="https://www.centerhotels.com/en/hotel-arnarhvoll-reykjavik" target="_blank" class="book-btn" style="margin-top:8px;background:rgba(181,123,238,0.1);color:var(--purple);border-color:rgba(181,123,238,0.3)">🏨 Arnarhvoll</a>
+            <a href="https://www.booking.com/hotel/is/cabin-reykjavik.html" target="_blank" class="book-btn secondary">🏨 Cabin Hotel</a>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -515,6 +567,16 @@
         <div class="info-row"><span class="label">Why here</span><span class="value note">Mid-rift tectonic plates, midnight sun, Geysir &amp; Gullfoss nearby</span></div>
         <a href="https://www.tjalda.is" target="_blank" class="book-btn">📅 Book on Tjalda</a>
         <a href="https://www.thingvellir.is/en/" target="_blank" class="book-btn secondary">🌐 Park Site</a>
+        <div class="hotel-upgrade">
+          <button class="hotel-toggle-btn" onclick="toggleHotel(this)">🏨 Comfort Upgrade Option <span class="arrow">▼</span></button>
+          <div class="hotel-upgrade-body">
+            <div class="hotel-name">Hótel Geysir ⭐⭐⭐</div>
+            <div class="hotel-meta">📍 Geysir, Golden Circle · Steps from Strokkur geyser · Breakfast included</div>
+            <div class="hotel-price">~$180–240/night (incl. breakfast)</div>
+            <div class="hotel-meta">💡 <strong>Worth it?</strong> Lets you see Geysir at dawn with no crowds before tour buses arrive — a genuinely special experience. Hot tub on site.</div>
+            <a href="https://www.hotelgeysir.com" target="_blank" class="book-btn" style="margin-top:8px;background:rgba(181,123,238,0.1);color:var(--purple);border-color:rgba(181,123,238,0.3)">🏨 Hótel Geysir</a>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -539,6 +601,16 @@
         <div class="info-row"><span class="label">Booking</span><span class="value">tjalda.is or via campsite</span></div>
         <div class="info-row"><span class="label">Highlights</span><span class="value note">Kirkjufell "Game of Thrones" mountain, whale watching, Bæjarfoss waterfall</span></div>
         <a href="https://www.tjalda.is" target="_blank" class="book-btn">📅 Book on Tjalda</a>
+        <div class="hotel-upgrade">
+          <button class="hotel-toggle-btn" onclick="toggleHotel(this)">🏨 Comfort Upgrade Option <span class="arrow">▼</span></button>
+          <div class="hotel-upgrade-body">
+            <div class="hotel-name">Kirkjufell Guesthouse ⭐⭐⭐</div>
+            <div class="hotel-meta">📍 Grundarfjörður · Views of Kirkjufell from room · Home-cooked breakfast option</div>
+            <div class="hotel-price">~$130–180/night</div>
+            <div class="hotel-meta">💡 <strong>Worth it?</strong> Grundarfjörður is a tiny fishing village — even the guesthouses feel like a local's living room. Great people-watching spot after driving all day.</div>
+            <a href="https://www.booking.com/searchresults.html?ss=Grundarfj%C3%B6r%C3%B0ur" target="_blank" class="book-btn" style="margin-top:8px;background:rgba(181,123,238,0.1);color:var(--purple);border-color:rgba(181,123,238,0.3)">🏨 Search Guesthouses</a>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -587,6 +659,16 @@
         <div class="info-row"><span class="label">Highlights</span><span class="value note">Norwegian House museum, harbor, Súgandafjörður views</span></div>
         <a href="https://www.tjalda.is" target="_blank" class="book-btn">📅 Book on Tjalda</a>
         <a href="https://www.seatours.is/baldur-ferry/" target="_blank" class="book-btn secondary">⛴️ Book Ferry</a>
+        <div class="hotel-upgrade">
+          <button class="hotel-toggle-btn" onclick="toggleHotel(this)">🏨 Comfort Upgrade Option <span class="arrow">▼</span></button>
+          <div class="hotel-upgrade-body">
+            <div class="hotel-name">Hotel Stykkishólmur ⭐⭐⭐</div>
+            <div class="hotel-meta">📍 Town center · Stunning fjord &amp; island views · In-house restaurant</div>
+            <div class="hotel-price">~$150–200/night</div>
+            <div class="hotel-meta">💡 <strong>Worth it?</strong> Last real hotel before several nights of remote Westfjords camping. The restaurant is excellent — try the local fish. Early ferry the next morning is easier from here than the campsite.</div>
+            <a href="https://www.hotelstykkisholmur.is" target="_blank" class="book-btn" style="margin-top:8px;background:rgba(181,123,238,0.1);color:var(--purple);border-color:rgba(181,123,238,0.3)">🏨 Hotel Stykkishólmur</a>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -637,6 +719,16 @@
         <div class="info-row"><span class="label">Highlights</span><span class="value note">Historic wooden houses, Hornstrandir ferry base, world-class fish stew at Tjöruhúsið</span></div>
         <a href="https://www.tjalda.is" target="_blank" class="book-btn">📅 Book on Tjalda</a>
         <a href="https://www.tjoruhusid.is/" target="_blank" class="book-btn secondary">🍽️ Tjöruhúsið</a>
+        <div class="hotel-upgrade">
+          <button class="hotel-toggle-btn" onclick="toggleHotel(this)">🏨 Comfort Upgrade Option <span class="arrow">▼</span></button>
+          <div class="hotel-upgrade-body">
+            <div class="hotel-name">Hotel Ísafjörður ⭐⭐⭐</div>
+            <div class="hotel-meta">📍 Ísafjörður town center · Newly renovated · Bar &amp; restaurant on-site</div>
+            <div class="hotel-price">~$160–220/night</div>
+            <div class="hotel-meta">💡 <strong>Worth it?</strong> Ísafjörður is the most remote capital-of-a-region in all of Iceland. After winding fjord roads and remote camping, a proper bed here is a real treat. Also means easier access to Tjöruhúsið for dinner — they fill up fast!</div>
+            <a href="https://www.hotelisafjordur.is" target="_blank" class="book-btn" style="margin-top:8px;background:rgba(181,123,238,0.1);color:var(--purple);border-color:rgba(181,123,238,0.3)">🏨 Hotel Ísafjörður</a>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -688,9 +780,19 @@
         </div>
         <div class="info-row"><span class="label">Cost per night</span><span class="value cost">~$50–65 (2 people)</span></div>
         <div class="info-row"><span class="label">Bonus</span><span class="value">Húsafell Stone (ancient strength test), INTO the Glacier tour nearby</span></div>
-        <div class="info-row"><span class="label">Highlights</span><span class="value note">Hraunfossar &amp; Barnafoss falls, Langjökull ice cave, Víðgelmir lava tube</span></div>
+        <div class="info-row"><span class="label">Highlights</span><span class="value note">Hraunfossar &amp; Barnafosr falls, Langjökull ice cave, Víðgelmir lava tube</span></div>
         <a href="https://www.tjalda.is" target="_blank" class="book-btn">📅 Book on Tjalda</a>
         <a href="https://www.husafell.is/" target="_blank" class="book-btn secondary">🌐 Húsafell Resort</a>
+        <div class="hotel-upgrade">
+          <button class="hotel-toggle-btn" onclick="toggleHotel(this)">🏨 Comfort Upgrade Option — Post-Eclipse Splurge? <span class="arrow">▼</span></button>
+          <div class="hotel-upgrade-body">
+            <div class="hotel-name">Húsafell Hotel &amp; Spa ⭐⭐⭐⭐</div>
+            <div class="hotel-meta">📍 On-site at Húsafell Resort · Geothermal spa · Restaurant with local lamb &amp; fish</div>
+            <div class="hotel-price">~$220–320/night (includes spa access)</div>
+            <div class="hotel-meta">💡 <strong>Worth it?</strong> You just watched a total solar eclipse. Celebrate! The Húsafell spa uses the same Deildartunguhver geothermal spring water as Krauma next door. Perfect way to wind down before heading back to Reykjavik.</div>
+            <a href="https://www.husafell.is/accommodation/" target="_blank" class="book-btn" style="margin-top:8px;background:rgba(181,123,238,0.1);color:var(--purple);border-color:rgba(181,123,238,0.3)">🏨 Húsafell Hotel</a>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -715,6 +817,20 @@
         <div class="info-row"><span class="label">Day plan</span><span class="value note">Blue Lagoon (evening Aug 14), city last dinner, pack van for return</span></div>
         <a href="https://www.tjalda.is" target="_blank" class="book-btn">📅 Book on Tjalda</a>
         <a href="https://reykjavikcampsite.is" target="_blank" class="book-btn secondary">🌐 Direct</a>
+        <div class="hotel-upgrade">
+          <button class="hotel-toggle-btn" onclick="toggleHotel(this)">🏨 Comfort Upgrade Option — Last Night Treat? <span class="arrow">▼</span></button>
+          <div class="hotel-upgrade-body">
+            <div class="hotel-name">Hotel Reykjavik Grand ⭐⭐⭐⭐</div>
+            <div class="hotel-meta">📍 Sigtún 38 · Shuttle-close to KEF · Breakfast included · Easy van drop-off logistics</div>
+            <div class="hotel-price">~$180–240/night (incl. breakfast)</div>
+            <div class="hotel-meta">💡 <strong>Worth it?</strong> On your final night before an early flight home, avoiding campsite tear-down stress is huge. Hotel also means hot shower, luggage storage, and a proper farewell Reykjavik dinner. Alaska Air departures from KEF — check your flight time.</div>
+            <div class="hotel-name" style="margin-top:8px">Splurge pick: Hotel Borg ⭐⭐⭐⭐⭐</div>
+            <div class="hotel-meta">📍 Art Deco landmark · City center · Iceland's most iconic hotel</div>
+            <div class="hotel-price">~$300–400/night</div>
+            <a href="https://grand.islandshotel.is" target="_blank" class="book-btn" style="margin-top:8px;background:rgba(181,123,238,0.1);color:var(--purple);border-color:rgba(181,123,238,0.3)">🏨 Hotel Grand</a>
+            <a href="https://www.hotelborg.is" target="_blank" class="book-btn secondary">🏨 Hotel Borg</a>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -764,7 +880,7 @@
       </tr>
       <tr>
         <td class="urgency-cell"><span class="urgency-pill urgency-high">🟠 ASAP</span></td>
-        <td class="item-name">Tjöruhúsið Restaurant<br><span style="font-size:11px;color:var(--muted);font-weight:400">Ísafjörður · Legendary fish stew buffet</span></td>
+        <td class="item-name">Tjöruhúsið Restaurant<br><span style="font-size:11px;color:var(--muted);font-weight:400">Ísafjörødur · Legendary fish stew buffet</span></td>
         <td class="item-date">ASAP</td>
         <td class="item-cost">~$40–55/person</td>
         <td>Fills within days of opening in spring</td>
@@ -796,224 +912,41 @@
       </tr>
       <tr>
         <td class="urgency-cell"><span class="urgency-pill urgency-medium">🟡 2–3 MO</span></td>
-        <td class="item-name">Sky Lagoon<br><span style="font-size:11px;color:var(--muted);font-weight:400">Reykjavik area · Alternative to Blue Lagoon (arrival day)</span></td>
-        <td class="item-date">1–2 months ahead</td>
-        <td class="item-cost">~$60–100/person</td>
-        <td>Good arrival-day activity (close to KEF)</td>
-        <td class="item-link"><a href="https://www.skylagoon.com" target="_blank">skylagoon.com ↗</a></td>
-      </tr>
-      <tr>
-        <td class="urgency-cell"><span class="urgency-pill urgency-medium">🟡 2–3 MO</span></td>
-        <td class="item-name">Fontana Geothermal Baths<br><span style="font-size:11px;color:var(--muted);font-weight:400">Laugarvatn · Golden Circle day · Rye bread baked in ground</span></td>
-        <td class="item-date">1 month ahead</td>
-        <td class="item-cost">~$30–45/person</td>
-        <td>Popular but usually available</td>
-        <td class="item-link"><a href="https://www.fontana.is/en/" target="_blank">fontana.is ↗</a></td>
-      </tr>
-      <tr>
-        <td class="urgency-cell"><span class="urgency-pill urgency-low">🟢 FLEXIBLE</span></td>
-        <td class="item-name">Hornstrandir Day Hike Boat<br><span style="font-size:11px;color:var(--muted);font-weight:400">From Ísafjörður · Remote nature reserve</span></td>
-        <td class="item-date">1–2 months ahead</td>
-        <td class="item-cost">~$80–120/person round trip</td>
-        <td>Weather permitting, limited boats</td>
-        <td class="item-link"><a href="https://www.westfjords.is/en/plan-your-trip/transport/hornstrandir" target="_blank">westfjords.is ↗</a></td>
-      </tr>
-      <tr>
-        <td class="urgency-cell"><span class="urgency-pill urgency-low">🟢 FLEXIBLE</span></td>
-        <td class="item-name">Secret Lagoon (Gamla Laugin)<br><span style="font-size:11px;color:var(--muted);font-weight:400">Flúðir · Iceland's oldest geothermal pool</span></td>
-        <td class="item-date">A few weeks</td>
-        <td class="item-cost">~$25/person</td>
-        <td>Usually available, but book to guarantee</td>
-        <td class="item-link"><a href="https://secretlagoon.is/" target="_blank">secretlagoon.is ↗</a></td>
-      </tr>
-      <tr>
-        <td class="urgency-cell"><span class="urgency-pill urgency-low">🟢 FLEXIBLE</span></td>
-        <td class="item-name">Matur og Drykkur Restaurant<br><span style="font-size:11px;color:var(--muted);font-weight:400">Reykjavik · Traditional Icelandic new wave cuisine</span></td>
-        <td class="item-date">2–4 weeks ahead</td>
-        <td class="item-cost">~$60–90/person</td>
-        <td>Popular but usually manageable</td>
-        <td class="item-link"><a href="https://maturogdrykkur.is/" target="_blank">maturogdrykkur.is ↗</a></td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+     �\��H�][K[�[YH����HY��ۏ����[��[OH��۝\�^�N�L\���܎��\�K[]]Y
+Nٛ۝]�ZY�����^Zژ]�Z�\�XH0��[\��]]�H��YHY��ۈ
+\��]�[^JO��[������\��H�][KY]H��x�$̈[۝�ZXY����\��H�][KX������
+�8�$�L�\��ۏ�������\��]�[Y^HX�]�]H
+���H��Q�O����\��H�][K[[�ȏ�H�Y�H�΋����˜��[Y��ۋ���H�\��]H�؛[�ȏ���[Y��ۋ���H8����O������������\��H�\��[��KX�[���[��\��H�\��[��K\[\��[��K[YY][H��'��H��$��S���[������\��H�][K[�[YH���۝[�H�[�\�X[�]�����[��[OH��۝\�^�N�L\���܎��\�K[]]Y
+Nٛ۝]�ZY����]Y�\��]�0����[��\��H^H0���YH��XY�Z�Y[�ܛ�[���[������\��H�][KY]H��H[۝ZXY����\��H�][KX�������8�$�
+K�\��ۏ�����[\��]\�X[H]�Z[X�O����\��H�][K[[�ȏ�H�Y�H�΋����˙�۝[�K�\��[�Ȉ\��]H�؛[�ȏ��۝[�K�\�8����O������������\��H�\��[��KX�[���[��\��H�\��[��K\[\��[��K[�ȏ�'���VP�O��[������\��H�][K[�[YH��ܛ���[�\�^HZ�H��]����[��[OH��۝\�^�N�L\���܎��\�K[]]Y
+Nٛ۝]�ZY�������H0�\�Y��휰�\�0���[[�H�]\�H�\�\��O��[������\��H�][KY]H��x�$̈[۝�ZXY����\��H�][KX������8�$�L��\��ۈ��[��\�����X]\�\�Z][��[Z]Y��]�����\��H�][K[[�ȏ�H�Y�H�΋����˝�\���ܙ˚\��[��[�^[�\�]�\��[��ܝ�ܛ���[�\��\��]H�؛[�ȏ��\���ܙ˚\�8����O������������\��H�\��[��KX�[���[��\��H�\��[��K\[\��[��K[�ȏ�'���VP�O��[������\��H�][K[�[YH���Xܙ]Y��ۈ
+�[[H]Y�[�O����[��[OH��۝\�^�N�L\���܎��\�K[]]Y
+Nٛ۝]�ZY�����0��\�0��X�[[�	���\��[�\�X[����[������\��H�][KY]H��H�]��YZ������\��H�][KX�������K�\��ۏ����\�X[H]�Z[X�K�]������X\�[�YO����\��H�][K[[�ȏ�H�Y�H�΋���Xܙ]Y��ۋ�\�Ȉ\��]H�؛[�ȏ��Xܙ]Y��ۋ�\�8����O������������\��H�\��[��KX�[���[��\��H�\��[��K\[\��[��K[�ȏ�'���VP�O��[������\��H�][K[�[YH��X]\����Z��\��\�]\�[�����[��[OH��۝\�^�N�L\���܎��\�K[]]Y
+Nٛ۝]�ZY�����^Zژ]�Z�0���Y][ۘ[X�[[�X��]��]�H�Z\�[�O��[������\��H�][KY]H����$��YZ��ZXY����\��H�][KX������
+�8�$�L�\��ۏ�����[\��]\�X[HX[�Y�XX�O����\��H�][K[[�ȏ�H�Y�H�΋��X]\����Z��\��\�Ȉ\��]H�؛[�ȏ�X]\����Z��\��\�8����O�����������O���X�O���]����KKHS�S�T�KO��]��\��H�[�[�YH�[�[]\ȏ��]��\��H��X�[ۋ]]H��'�H�[\[��\�	�[\�[ۙ^H�]�\���]���]��\��H��X�[ۋ\�X���[��Y\�Y�X�H�܈�[\\��[��]�[[�X�[[��]����]��\��H���X�����]��\��H�[���X�����ϼ'���X�[[��[\[���\��ς��H�[��H�\�]�]�\���Y��و�[\[���܈�[�HXܛ���M�
+��[\�]\ˈ]��Y�H�[��\��H�Y�Y�����NNx�$̍O��[��
+8�b	�Mx�$̍�
+K]�[��]�H[�H�YۚY�X�[�[ۙ^Hۈ�[\�]H�Y\��ˈ^Z[��[�]�YX[H
+�
 
-<!-- PANEL: TIPS -->
-<div class="panel" id="panel-tips">
-  <div class="section-title">💡 Camping Tips &amp; Money Savers</div>
-  <div class="section-sub">Insider advice for campervan travel in Iceland</div>
+x�$��ۚY�\��]JK����[��O���ۙϐ�\��܎����ۙψ�\�L
+��Y���^Z[��]Y[X�\��]\��O��O���ۙϓ��N����ۙψ��[�]\�\�HY[X�\��8�%[\��[�\�\��X[\�[�X^H��\�X�\]K��\�Y�H]�[\[���\��\��O��O���ۙϐ�^Hۛ[�N����ۙψ�[\[���\��\�8�%[��]�Z[X�H]��YH�[\�]\��O���[��H�Y�H�΋����˘�[\[���\��\�Ȉ\��]H�؛[�Ȉ�\��H�����X����[OH�X\��[�]��L���'����]�[\[���\��O���]����]��\��H�[���X�����ϸ���[K�\�8�%ٙ�X�X[����[��]�ܛO�ς��X�[[�	��ٙ�X�X[�[\�]H����[���\�[K�[���Y�\�\�Y�[\�]\�\�H]��[��\��H�Y�Y���[�^\������Y�\�\�Y�[\�]\���[��8�%�[�[\[��[��[\\��[��\�[Y�[[�X�[[��[��H�MK����[��O��X\���H�Y�[ۈ܈�[\�]H�[YO�O��O���YH�]\�[��]�H\�X�����[���O��O�^[Y[�ۈ\��]�[ٝ[�X��\Y�]��ۙϜ�\�\��][ۈ�[�\]Z\�Y���ۙψ[�XZ��X\�ۏ�O��O�\]�Z[X�H�܈S��[�[���Y�O���[��H�Y�H�΋����˝�[K�\Ȉ\��]H�؛[�Ȉ�\��H�����X����[OH�X\��[�]��L���'��H����[K�\��O���]����]����]��\��H���X�����]��\��H�[���X�����ϼ'�����\���]Y�O�ς��X�[[�	��][�X�\[���
+[O��[�]Y�\��[O�H\�H]�\�]�\�H[�\�X[H�\��H	
+x�$�L�܈[��H8�%\��[��\��H�Y�Y���[��Y\�����\��[��X����[���]�[�Y�[�Hۉ���[KX[�H�]�[\���^H��[��H�\��܈H����\�[���Zˏ���[��O���ۙϑܝ[�\���휰�\�������ۙψ�X[�ۈ���\�H��[�O��O���ۙϰ�\�Y��휰�\�������ۙψܙX]�[�X�[]O�O��O���ۙϓ]Y�\�[\����^Zژ]�ZΏ���ۙψۙHوH�\�[�X�[[��O��O��[\�]H���\�Έ\�X[H��[�[�\�]Y
+�8�$�LT��8�b	K�L8�$�ˍL
+O�O���[���]����]��\��H�[���X�����ϼ'�����	�[\�ܛ��\�H\��ς��X][���][�X�[[�\�^[��]�K��[��\��H�Y�Y���[�
+�8�$��	HYX[�[�H�[���[���܈H�\���ܙ�\�X�X[K����[��O���ۙϐ��۝\Ώ���ۙψ�X\\�ܛ��\�H�Z[�
+Y[��Y����H8�%����\[��^Zژ]�Z�[�0�\�Y��휰�\��O��O���ۙϒܛۘ[�����ۙψ�X�ۙ�X\\��O��O���ۙϓ�]0�Ώ���ۙψ[���Y�]Y��Y[�O�O��O���ۙϑ�\��][ۜ�
+�Kܚ�[�N����ۙψ]�H����8�%�\��\�[��HX�[�	�[\��۝�[�Y[��O��O���ۙϕ�\������Ώ���ۙψ�\�H[Z]Yܛ��\�H�[ۜ�8�%��[���]�\�[^\�و�\Y\����H0�\�Y��휰�\��O���[���]����]����]��\��H���X�����]��\��H�[���X�����ϼ'��H\�Y�[\���ۛ�Y�ς�[��O���ۙϕ�[N����ۙψ�[\�]H����[��	�[\�X\�O��O���ۙϕ�Y\��\Ώ���ۙψX�[[�	��ٙ�X�X[�X]\�\
+�\�\�ݙ\�����JO�O��O���ۙόLL��\Ώ���ۙψX�[[�	��[Y\��[��H�Y�]H\8�%�Y�\�\�[�\��\�O��O���ۙϓX\˛YN����ۙψٙ�[�HX\�
+\��[�X[�܈�\���ܙ�O�O��O���ۙϔ�Y�]�]�[�\Ώ���ۙψ��Y�ۙ][ۜ�	�[\��]�[[\���O��O���ۙϑX�\�H�Y�\�N����ۙψX�\�H]	�[\�[Z[��\�O���[���]����]��\��H�[���X�����ϼ'�({�#�]Y�\��X]\�	�[\��]�X���ς�[��O���ۙϐ]�\�Y�H[\����ۙψL8�$�M0��
 
-  <div class="two-col">
-    <div class="info-box">
-      <h3>🃏 Iceland Camping Card</h3>
-      <p>A single card that gives 28 nights of camping for 2 people across 170+ campsites. At roughly <span class="highlight">€199–249</span> (≈$215–270), it can save you significant money on campsite fees vs. paying individually (~$45–70/night per site).</p>
-      <ul>
-        <li><strong>Best for:</strong> Trips 10+ nights staying at member sites</li>
-        <li><strong>Note:</strong> Not all sites are members — Hellissandur is smaller and may not participate. Verify at campingcard.is</li>
-        <li><strong>Buy online:</strong> campingcard.is — also available at some campsites</li>
-      </ul>
-      <a href="https://www.campingcard.is/" target="_blank" class="book-btn" style="margin-top:12px">🃏 Get Camping Card</a>
-    </div>
-
-    <div class="info-box">
-      <h3>⛺ Tjalda.is — Official Booking Platform</h3>
-      <p>Iceland's official campsite booking system. Most registered campsites use it. <span class="highlight">Always book registered campsites</span> — wild camping in campervans is illegal in Iceland since 2015.</p>
-      <ul>
-        <li>Search by region or campsite name</li>
-        <li>Some sites also have direct booking</li>
-        <li>Payment on arrival often accepted, but <strong>reservation still required</strong> in peak season</li>
-        <li>App available for iOS and Android</li>
-      </ul>
-      <a href="https://www.tjalda.is" target="_blank" class="book-btn" style="margin-top:12px">📅 Go to Tjalda.is</a>
-    </div>
-  </div>
-
-  <div class="two-col">
-    <div class="info-box">
-      <h3>🚿 Shower Strategy</h3>
-      <p>Iceland's municipal pools (<em>sundlaugar</em>) are everywhere and usually charge $5–10 for entry — this <span class="highlight">includes hot showers and hot tubs</span>. Even if you don't swim, many travelers buy pool entry just for a hot shower and soak.</p>
-      <ul>
-        <li><strong>Grundarfjörður Pool:</strong> Small town pool, very local</li>
-        <li><strong>Ísafjörður Pool:</strong> Great full facility</li>
-        <li><strong>Laugardalur Pool, Reykjavik:</strong> One of the best in Iceland</li>
-        <li>Campsite showers: usually coin-operated (200–500 ISK ≈ $1.50–$3.50)</li>
-      </ul>
-    </div>
-
-    <div class="info-box">
-      <h3>🛒 Food &amp; Grocery Tips</h3>
-      <p>Eating out in Iceland is expensive. <span class="highlight">Plan 60–70% meals in the van</span> for the Westfjords especially.</p>
-      <ul>
-        <li><strong>Bónus:</strong> Cheapest grocery chain (yellow pig logo) — stock up in Reykjavik and Ísafjörður</li>
-        <li><strong>Krónan:</strong> Second cheapest</li>
-        <li><strong>Nettó:</strong> Also budget-friendly</li>
-        <li><strong>Gas stations (N1, Orkan):</strong> Have hot food — surprisingly decent &amp; convenient</li>
-        <li><strong>Westfjords:</strong> Very limited grocery options — bring several days of supplies from Ísafjörður</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="two-col">
-    <div class="info-box">
-      <h3>📱 Useful Apps to Download</h3>
-      <ul>
-        <li><strong>Tjalda:</strong> Campsite booking &amp; map</li>
-        <li><strong>Vedur.is:</strong> Iceland's official weather app (trust this over Google)</li>
-        <li><strong>112.is:</strong> Iceland's emergency safety app — register your trip</li>
-        <li><strong>Maps.me:</strong> Offline maps (essential for Westfjords)</li>
-        <li><strong>Safetravel.is:</strong> Road conditions &amp; travel alerts</li>
-        <li><strong>Eclipse Safari:</strong> Eclipse path &amp; timing app</li>
-      </ul>
-    </div>
-
-    <div class="info-box">
-      <h3>🌡️ August Weather &amp; What to Pack</h3>
-      <ul>
-        <li><strong>Average temp:</strong> 10–14°C (50–57°F) — bring layers</li>
-        <li><strong>Rain:</strong> Pack waterproof jacket &amp; pants — it will rain</li>
-        <li><strong>Wind:</strong> Stronger than expected, especially Westfjords</li>
-        <li><strong>Eclipse glasses:</strong> Bring certified ISO 12312-2 glasses — may be hard to find locally</li>
-        <li><strong>Midnight sun:</strong> Blackout blinds for the van are essential — sun barely sets in August</li>
-        <li><strong>Hiking boots:</strong> Waterproof, broken-in</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="info-box">
-    <h3>🐱 Cat Cafés &amp; Unexpected Gems</h3>
-    <p>A few spots that align with your interests that don't need advance booking but are worth seeking out:</p>
-    <ul>
-      <li><strong>Kattakaffihúsið (Cat Café, Reykjavik):</strong> Iceland's first cat café — cozy, resident cats, great coffee. No booking usually needed.</li>
-      <li><strong>Settlement Centre, Borgarnes:</strong> Excellent Viking history exhibit — on your drive south from Westfjords. Budget 2 hours.</li>
-      <li><strong>Icelandic Goat Center, Háafell:</strong> Near Húsafell — interactive farm with endangered Icelandic goats. Charming and free.</li>
-      <li><strong>Reykjavik Botanical Garden (Grasagarðurinn):</strong> Free, beautiful, adjacent to Laugardalur Campsite — perfect arrival-day garden walk.</li>
-      <li><strong>Wool &amp; Craft shops:</strong> Handprjónasambandið (Handknitting Association of Iceland) in Reykjavik for authentic lopapeysa sweaters.</li>
-    </ul>
-  </div>
-</div>
-
-<!-- PANEL: COSTS -->
-<div class="panel" id="panel-costs">
-  <div class="section-title">💰 Budget Estimate</div>
-  <div class="section-sub">Rough cost breakdown for 2 people, 12 nights. All figures in USD approximations.</div>
-
-  <div class="two-col">
-    <div class="info-box">
-      <h3>🏕️ Camping &amp; Accommodation</h3>
-      <table class="cost-table">
-        <tr><td>12 nights camping (avg $50/night for 2)</td><td>~$600</td></tr>
-        <tr><td>OR Iceland Camping Card (28 nights/2 people)</td><td>~$230</td></tr>
-        <tr><td>Campsite showers (coin-op, extra)</td><td>~$20–40</td></tr>
-        <tr class="total"><td><strong>TOTAL — Camping</strong></td><td><strong>~$600–650</strong></td></tr>
-        <tr class="total"><td><strong>TOTAL — With Camping Card</strong></td><td><strong>~$250–270</strong></td></tr>
-      </table>
-    </div>
-
-    <div class="info-box">
-      <h3>🚐 Van &amp; Transport</h3>
-      <table class="cost-table">
-        <tr><td>FIAT Doblò Maxi rental (12 nights, Guide to Iceland)</td><td>~$1,800–2,200</td></tr>
-        <tr><td>Fuel (~950 km, diesel, est. 7L/100km)</td><td>~$150–200</td></tr>
-        <tr><td>Baldur Ferry (van + 2 people × 2 crossings)</td><td>~$260–360</td></tr>
-        <tr><td>Parking &amp; campsite access fees</td><td>~$30–50</td></tr>
-        <tr class="total"><td><strong>TOTAL — Van &amp; Transport</strong></td><td><strong>~$2,250–2,800</strong></td></tr>
-      </table>
-    </div>
-
-    <div class="info-box">
-      <h3>🧖 Experiences &amp; Activities</h3>
-      <table class="cost-table">
-        <tr><td>Blue Lagoon (2 people, premium)</td><td>~$200–280</td></tr>
-        <tr><td>Sky Lagoon (2 people)</td><td>~$120–180</td></tr>
-        <tr><td>Glacier hike — Snæfellsjökull (2 people)</td><td>~$180–260</td></tr>
-        <tr><td>Hornstrandir day boat (2 people)</td><td>~$160–200</td></tr>
-        <tr><td>Fontana / Secret Lagoon (2 people)</td><td>~$50–80</td></tr>
-        <tr><td>Municipal pools / sundlaugar (est. 5 visits)</td><td>~$50–70</td></tr>
-        <tr class="total"><td><strong>TOTAL — Experiences</strong></td><td><strong>~$760–1,070</strong></td></tr>
-      </table>
-    </div>
-
-    <div class="info-box">
-      <h3>🍽️ Food &amp; Dining</h3>
-      <table class="cost-table">
-        <tr><td>Groceries for van meals (~$40/day × 10 days)</td><td>~$400</td></tr>
-        <tr><td>Tjöruhúsið dinner (2 people)</td><td>~$80–100</td></tr>
-        <tr><td>Fridheimar greenhouse (2 people)</td><td>~$100–120</td></tr>
-        <tr><td>Matur og Drykkur, Reykjavik (2 people)</td><td>~$120–160</td></tr>
-        <tr><td>Gas station meals / coffee (est. 8 stops)</td><td>~$100–130</td></tr>
-        <tr><td>Misc dining out (2–3 other meals)</td><td>~$100–150</td></tr>
-        <tr class="total"><td><strong>TOTAL — Food</strong></td><td><strong>~$900–1,060</strong></td></tr>
-      </table>
-    </div>
-  </div>
-
-  <div class="info-box">
-    <h3>📊 Grand Total Estimate</h3>
-    <table class="cost-table">
-      <tr><td>Camping &amp; Accommodation</td><td>~$600</td></tr>
-      <tr><td>Van Rental &amp; Transport</td><td>~$2,250–2,800</td></tr>
-      <tr><td>Experiences &amp; Activities</td><td>~$760–1,070</td></tr>
-      <tr><td>Food &amp; Dining</td><td>~$900–1,060</td></tr>
-      <tr><td>Miscellaneous / buffer</td><td>~$200–300</td></tr>
-      <tr class="total"><td><strong>ESTIMATED TRIP TOTAL (2 people)</strong></td><td><strong>~$4,710–5,830</strong></td></tr>
-      <tr class="total"><td><strong>Flights (Alaska Air PDX→KEF, already booked)</strong></td><td><strong>Not included</strong></td></tr>
-    </table>
-    <p style="color:var(--muted);font-size:12px;margin-top:12px">💡 Tip: Using the Iceland Camping Card saves up to $370. Cooking most meals in the van saves another $400–500. A budget-conscious trip could come in under $4,000.</p>
-  </div>
-</div>
-</div><!-- /content -->
-
-<div class="footer">
-  Built for Jill &amp; Jeff McCardel · Chasing the Eclipse 2026 · Iceland Aug 3–15 · <a href="computer:///sessions/cool-gracious-lovelace/mnt/outputs/iceland-trip-map.html" style="color:var(--teal);text-decoration:none">View Interactive Map ↗</a>
-</div>
-
-<script>
-function showPanel(name) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('panel-' + name).classList.add('active');
-  event.target.classList.add('active');
-}
-</script>
-</body>
-</html>
+L8�$�M��H8�%��[��^Y\���O��O���ۙϔ�Z[�����ۙψX���]\���و�X��]	�[\�[��8�%]�[�Z[��O��O���ۙϕ�[�����ۙψ��ۙ�\�[�^X�Y\�X�X[H�\���ܙ��O��O���ۙϑX�\�H�\��\Ώ���ۙψ��[���\�Y�YYT��L��L�L��\��\�8�%X^H�H\���[���[O�O��O���ۙϓZY�Y��[�����ۙψ�X���]�[���܈H�[�\�H\��[�X[8�%�[��\�[H�]�[�]Y�\��O��O���ۙϒZ�[�����Ώ���ۙψ�]\���ً����[�Z[��O���[���]����]����]��\��H�[���X�����ϼ'�,H�]�Y��\�	�[\�[�^X�Y�[\������(����������܁����́ѡ�Ё������ݥѠ���ȁ��ѕɕ��́ѡ�Ё����Ё�������م��������������Ё�ɔ�ݽ�Ѡ�͕�������������(�����հ�(�����������ɽ���-��х�������ͧ���
+�Ё
+�����I�孩�٥������ɽ����%�������́����Ё��Ё������P����䰁ɕͥ���Ё���̰��ɕ�Ё��������9������������Յ��䁹������𽱤�(�����������ɽ���M��ѱ����Ё
+���ɔ��	�ɝ�ɹ������ɽ����ፕ����ЁY���������ѽ�䁕ᡥ��Ѓ�P������ȁ�ɥٔ�ͽ�Ѡ��ɽ��]��љ��ɑ̸�	Ց��Ѐȁ����̸𽱤�(�����������ɽ���%�����������Ё
+��ѕȰ�#����������ɽ����9��ȁ#�ͅ������P���ѕɅ�ѥٔ���ɴ�ݥѠ��������ɕ��%�������������̸�
+��ɵ���������ɕ��𽱤�(�����������ɽ���I�孩�٥��	�х�������ɑ����Ʌͅ�����ɥ�������ɽ����ɕ�������ѥ�հ���������ЁѼ�1�՝�ɑ���ȁ
+���ͥє��P���ə��Ё��ɥم����䁝�ɑ���݅���𽱤�(�����������ɽ���]���������
+Ʌ�Ё͡�������ɽ����!����ɫ鹅ͅ���������!�������ѥ����ͽ���ѥ������%�����������I�孩�٥����ȁ��ѡ��ѥ���������̈́��ݕ�ѕ�̸𽱤�(�����հ�(��𽑥��(𽑥��((�����A90�
+=MQL������F�b6�73�'�V�"�C�'�V��6�7G2#��F�b6�73�'6V7F����F�F�R#�	�+'VFvWBW7F��FS��F�c��F�b6�73�'6V7F����7V"#�&�Vv�6�7B'&V�F�v�f�""V��R�"�v�G2���f�wW&W2��U4B&����F���2���F�cࠢ�F�b6�73�'Gv��6��#��F�b6�73�&��f��&��#�ƃ3�	��^���6���rf��66����FF������3��F&�R6�73�&6�7B�F&�R#��G#��FC�"�v�G26���r�frCS��v�Bf�""���FC��FC��Cc��FC���G#��G#��FC��"�6V��B6���r6&B�#��v�G2�"V��R���FC��FC��C#3��FC���G#��G#��FC�6�6�FR6��vW'2�6������W�G&���FC��FC��C#(	3C��FC���G#��G"6�73�'F�F�#��FC��7G&��s�D�D�(	B��6���s��7G&��s���FC��FC��7G&��s��Cc(	3cS��7G&��s���FC���G#��G"6�73�'F�F�#��FC��7G&��s�D�D�(	Bv�F�6���r6&C��7G&��s���FC��FC��7G&��s��C#S(	3#s��7G&��s���FC���G#��G#��FB6��7��#""7G��S�'FF��r�F��'��6���#�f"���W'�R��f��B�6��S���f��B�vV�v�C�s�FW�B�G&�6f�&ӧWW&66S��WGFW"�76��s��W�#�	�����%$�B�D�����FV�fWr�v�G2�6�F�R&W7C��FC���G#��G#��FC��v�G2f��2(	B&W���f����FV��"�v�G2���FC��FC��C3(	3S��FC���G#��G#��FC��v�Bb(	B7G����6�;6��W"��FV��&R�fW''����FC��FC��CS(	3#��FC���G#��G#��FC��v�G2�(	3�(	B8�6f�;g,;�W"��FV��"�v�G2���FC��FC��C3#(	3CC��FC���G#��G#��FC��v�B"(	B�;�6fV����FV��7��7B�V6Ɨ6R���FC��FC��C##(	33#��FC���G#��G#��FC�&V����rr�v�G26���s��FC��FC��C3S��FC���G#��G"6�73�'F�F�"7G��S�&6���#�f"���W'�R�#��FC��7G&��s�D�D�(	B��'&�B���FV�b�v�G2�6�r���7G&��s���FC��FC��7G&��s��C�3C(	3Ã��7G&��s���FC���G#���F&�S���F�cࠢ�F�b6�73�&��f��&��#�ƃ3�	��f�f��G&�7�'C���3��F&�R6�73�&6�7B�F&�R#��G#��FC�d�BF�&�;"���&V�F��"�v�G2�wV�FRF��6V��B���FC��FC��CÃ(	3"�#��FC���G#��G#��FC�gVV���S���F�W6V��W7B�t���ғ��FC��FC��CS(	3#��FC���G#��G#��FC�&�GW"fW''��f��"V��R9r"7&�76��w2���FC��FC��C#c(	33c��FC���G#��G#��FC�&���rf��6�6�FR66W72fVW3��FC��FC��C3(	3S��FC���G#��G"6�73�'F�F�#��FC��7G&��s�D�D�(	Bf�f��G&�7�'C��7G&��s���FC��FC��7G&��s��C"�#S(	3"Ã��7G&��s���FC���G#���F&�S���F�cࠢ�F�b6�73�&��f��&��#�ƃ3�	�ybW�W&�V�6W2f��7F�f�F�W3���3��F&�R6�73�&6�7B�F&�R#��G#��FC�&�VR�v����"V��R�&V֗Vғ��FC��FC��C#(	3#���FC���G#��G#��FC�6���v����"V��R���FC��FC��C#(	3���FC���G#��G#��FC�v�6�W"���R(	B6�:ffV��6�;f�V���"V��R���FC��FC��C�(	3#c��FC���G#��G#��FC��&�7G&�F�"F�&�B�"V��R���FC��FC��Cc(	3#��FC���G#��G#��FC�f��F��6V7&WB�v����"V��R���FC��FC��CS(	3���FC���G#��G#��FC��V�6�����2�7V�F�Vv"�W7B�Rf�6�G2���FC��FC��CS(	3s��FC���G#��G"6�73�'F�F�#��FC��7G&��s�D�D�(	BW�W&�V�6W3��7G&��s���FC��FC��7G&��s��Csc(	3�s��7G&��s���FC���G#���F&�S���F�cࠢ�F�b6�73�&��f��&��#�ƃ3�	������f��Bf��F���s���3��F&�R6�73�&6�7B�F&�R#��G#��FC�w&�6W&�W2f�"f��V�2��CC�F�9rF�2���FC��FC��CC��FC���G#��G#��FC�F�;g'V�;�6�;F���W"�"V��R���FC��FC��C�(	3��FC���G#��G#��FC�g&�F�V��"w&VV��W6R�"V��R���FC��FC��C(	3#��FC���G#��G#��FC��GW"�rG'���W"�&W���f���"V��R���FC��FC��C#(	3c��FC���G#��G#��FC�v27FF����V�2�6�ffVR�W7B��7F�2���FC��FC��C(	33��FC���G#��G#��FC�֗62F���r�WB�.(	32�F�W"�V�2���FC��FC��C(	3S��FC���G#��G"6�73�'F�F�#��FC��7G&��s�D�D�(	Bf��C��7G&��s���FC��FC��7G&��s��C�(	3�c��7G&��s���FC���G#���F&�S���F�c���F�cࠢ�F�b6�73�&��f��&��#�ƃ3�	�8�w&�BF�F�W7F��FS���3��F&�R6�73�&6�7B�F&�R#��G#��FC�6���rf��66����FF������6����FC��FC��Cc��FC���G#��G#��FB7G��S�&6���#�f"���W'�R�#�	���66����FF������'&�B(	Bb��FV��v�G2���FC��FB7G��S�&6���#�f"���W'�R�#��C�3C(	3Ã��FC���G#��G#��FC�f�&V�F�f��G&�7�'C��FC��FC��C"�#S(	3"Ã��FC���G#��G#��FC�W�W&�V�6W2f��7F�f�F�W3��FC��FC��Csc(	3�s��FC���G#��G#��FC�f��Bf��F���s��FC��FC��C�(	3�c��FC���G#��G#��FC�֗66V���V�W2�'VffW#��FC��FC��C#(	33��FC���G#��G"6�73�'F�F�#��FC��7G&��s�D�D�(	BgV��6���rG&���7G&��s���FC��FC��7G&��s��CB�s(	3RÃ3��7G&��s���FC���G#��G"6�73�'F�F�"7G��S�&6���#�f"���W'�R�#��FC��7G&��s�D�D�(	B��'&�B�b��FV��v�G2���7G&��s���FC��FC��7G&��s��CR�CS(	3r�C��7G&��s���FC���G#��G"6�73�'F�F�#��FC��7G&��s�fƖv�G2��6��"E�(i$�Tb��&VG�&���VB���7G&��s���FC��FC��7G&��s���B��6�VFVC��7G&��s���FC���G#���F&�S��7G��S�&6���#�f"����WFVB��f��B�6��S�'���&v���F��'�#�	�*�7G&��r7G��S�&6���#�f"���FW�B�#����6�'VFvWBF����7G&��s�W6��rF�R�6V��B6���r6&B6fW2WF�C3s�6�����r��7B�V�2��F�Rf�6fW2��F�W"CC(	3S�'VFvWB�6��66��W2���6�G&�6�V�B6��R��V�FW"CB������7G��S�&6���#�f"���W'�R��f��B�6��S�'���&v���F����#�	����7G&��r7G��S�&6���#�f"���FW�B�#䇖'&�B�F�����7G&��s���FV��v�G2B&W���f���7G����6�;6��W"�8�6f�;g,;�W"��B�;�6fV��v�fR��R6��f�'B&���V�G2&�V�BF�Rv��B6���r7G&WF6�W2(	B�B��RF�RV6Ɨ6R�v�BfVV�WfV���&R7V6��'�6��G&7B��V�F�R�V���FV�Ww&FS��V��F�vv�W2��F�R�v�B�'���v�BF"f�"7V6�f�2�6�2������F�c���F�c���F�c�����6��FV�B��ࠣ�F�b6�73�&f��FW"#�'V��Bf�"����f���Vfb�46&FV�+r6�6��rF�RV6Ɨ6R##b+r�6V��BVr>(	3R+r��&Vc�&6��WFW#����6W76���2�6����w&6��W2���fV�6R���B��WGWG2��6V��B�G&����F��"7G��S�&6���#�f"���FV�FW�B�FV6�&F������R#�f�Wr��FW&7F�fR�(is�����F�cࠣ�67&�C�gV�7F���6��u�V��R���F�7V�V�B�VW'�6V�V7F�$�r��V�r��f�$V6�����6�74Ɨ7B�&V��fR�v7F�fRr����F�7V�V�B�VW'�6V�V7F�$�r�F"r��f�$V6��B��B�6�74Ɨ7B�&V��fR�v7F�fRr����F�7V�V�B�vWDV�V�V�D'��B�w�V��r���R��6�74Ɨ7B�FB�v7F�fRr���WfV�B�F&vWB�6�74Ɨ7B�FB�v7F�fRr���ЦgV�7F���F�vv�T��FV'F���'F��6�74Ɨ7B�F�vv�R�v�V�r���6��7B&�G��'F���W�DV�V�V�E6�&Ɩ�s��&�G��6�74Ɨ7B�F�vv�R�v�V�r���У��67&�C���&�G�����F���
