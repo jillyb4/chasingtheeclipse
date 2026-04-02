@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏕️ Iceland Stay & Booking Dashboard — Chasing the Eclipse 2026</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1f2e;
+    --surface2: #222840;
+    --border: #2e3657;
+    --text: #e8eaf6;
+    --muted: #8892b0;
+    --teal: #64ffda;
+    --purple: #b57bee;
+    --blue: #5dacf5;
+    --amber: #ffb347;
+    --red: #ff6b6b;
+    --yellow: #ffd700;
+    --green: #69f0ae;
+    --eclipse: #ff4500;
+    --eclipse-glow: rgba(255,69,0,0.25);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #0f1117 0%, #1a1f2e 50%, #0d1b3e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 24px 32px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .header-left h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--teal);
+    letter-spacing: -0.5px;
+  }
+  .header-left p {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 3px;
+  }
+  .header-badges {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .badge-teal { background: rgba(100,255,218,0.12); color: var(--teal); border: 1px solid rgba(100,255,218,0.25); }
+  .badge-amber { background: rgba(255,179,71,0.12); color: var(--amber); border: 1px solid rgba(255,179,71,0.25); }
+  .badge-eclipse { background: rgba(255,69,0,0.15); color: var(--eclipse); border: 1px solid rgba(255,69,0,0.35); }
+  .badge-red { background: rgba(255,107,107,0.12); color: var(--red); border: 1px solid rgba(255,107,107,0.25); }
+
+  /* ALERT BANNER */
+  .alert-banner {
+    background: linear-gradient(90deg, rgba(255,69,0,0.18), rgba(255,69,0,0.08));
+    border-left: 4px solid var(--eclipse);
+    border-bottom: 1px solid rgba(255,69,0,0.2);
+    padding: 12px 32px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+  }
+  .alert-banner .icon { font-size: 18px; }
+  .alert-banner strong { color: var(--eclipse); }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .stat-card {
+    background: var(--surface);
+    padding: 14px 20px;
+    text-align: center;
+  }
+  .stat-card .val {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--teal);
+    display: block;
+  }
+  .stat-card .lbl {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* SECTION TABS */
+  .tabs {
+    display: flex;
+    gap: 0;
+    background: var(--surface);
+    border-bottom: 2px solid var(--border);
+    padding: 0 24px;
+    overflow-x: auto;
+  }
+  .tab {
+    padding: 12px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    white-space: nowrap;
+    transition: all 0.2s;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    outline: none;
+  }
+  .tab.active { color: var(--teal); border-bottom-color: var(--teal); }
+  .tab:hover:not(.active) { color: var(--text); }
+
+  /* CONTENT */
+  .content { padding: 24px 32px; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* SECTION HEADER */
+  .section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .section-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  /* NIGHT CARDS */
+  .nights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+  }
+  .night-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.15s, border-color 0.15s;
+  }
+  .night-card:hover { transform: translateY(-2px); border-color: var(--teal); }
+  .night-card.eclipse-card {
+    border-color: rgba(255,69,0,0.5);
+    box-shadow: 0 0 20px rgba(255,69,0,0.12);
+  }
+  .night-card.eclipse-card:hover { border-color: var(--eclipse); }
+
+  .card-header {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .day-badge {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  .card-header h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    flex: 1;
+  }
+  .urgency-pill {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 12px;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+  }
+  .urgency-critical { background: rgba(255,69,0,0.2); color: var(--eclipse); border: 1px solid rgba(255,69,0,0.4); }
+  .urgency-high { background: rgba(255,107,107,0.15); color: var(--red); border: 1px solid rgba(255,107,107,0.3); }
+  .urgency-medium { background: rgba(255,179,71,0.12); color: var(--amber); border: 1px solid rgba(255,179,71,0.25); }
+  .urgency-low { background: rgba(105,240,174,0.1); color: var(--green); border: 1px solid rgba(105,240,174,0.2); }
+
+  .card-body { padding: 14px 16px; }
+  .campsite-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--teal);
+    margin-bottom: 4px;
+  }
+  .campsite-location {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .facilities {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+  }
+  .facility-tag {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .facility-tag.has { color: var(--green); border-color: rgba(105,240,174,0.2); }
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+  }
+  .info-row .label { color: var(--muted); }
+  .info-row .value { color: var(--text); font-weight: 600; }
+  .info-row .value.cost { color: var(--amber); }
+  .info-row .value.note { color: var(--blue); font-weight: 400; font-style: italic; }
+
+  .book-btn {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    background: rgba(100,255,218,0.1);
+    color: var(--teal);
+    border: 1px solid rgba(100,255,218,0.25);
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-right: 6px;
+  }
+  .book-btn:hover { background: rgba(100,255,218,0.18); border-color: var(--teal); }
+  .book-btn.secondary {
+    background: rgba(93,172,245,0.1);
+    color: var(--blue);
+    border-color: rgba(93,172,245,0.25);
+  }
+  .book-btn.secondary:hover { background: rgba(93,172,245,0.18); }
+
+  .eclipse-note {
+    margin-top: 10px;
+    padding: 8px 10px;
+    background: rgba(255,69,0,0.1);
+    border-left: 3px solid var(--eclipse);
+    border-radius: 0 6px 6px 0;
+    font-size: 11px;
+    color: #ffa07a;
+    line-height: 1.5;
+  }
+
+  /* ADVANCE BOOKINGS TABLE */
+  .advance-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .advance-table th {
+    background: var(--surface2);
+    color: var(--muted);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.7px;
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+  }
+  .advance-table td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .advance-table tr:last-child td { border-bottom: none; }
+  .advance-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .advance-table .item-name { font-weight: 700; color: var(--text); }
+  .advance-table .item-date { color: var(--muted); }
+  .advance-table .item-cost { color: var(--amber); font-weight: 600; }
+  .advance-table .item-link a {
+    color: var(--teal);
+    text-decoration: none;
+    font-size: 12px;
+    padding: 4px 10px;
+    border: 1px solid rgba(100,255,218,0.25);
+    border-radius: 6px;
+    background: rgba(100,255,218,0.07);
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .advance-table .item-link a:hover { background: rgba(100,255,218,0.15); }
+  .advance-table .urgency-cell { text-align: center; }
+  .priority-row td { background: rgba(255,69,0,0.04); }
+
+  /* CAMPING CARD BOX */
+  .info-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+  .info-box h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .info-box p { color: var(--muted); font-size: 13px; line-height: 1.7; margin-bottom: 8px; }
+  .info-box ul { color: var(--muted); font-size: 13px; line-height: 1.9; padding-left: 20px; }
+  .info-box ul li strong { color: var(--text); }
+  .info-box .highlight { color: var(--teal); font-weight: 600; }
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* COST SUMMARY */
+  .cost-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  .cost-table tr td:first-child { color: var(--muted); padding: 6px 0; }
+  .cost-table tr td:last-child { color: var(--text); font-weight: 600; text-align: right; padding: 6px 0; }
+  .cost-table tr.total td { color: var(--teal); font-size: 15px; border-top: 1px solid var(--border); padding-top: 10px; margin-top: 6px; }
+
+  /* PHASE LEGEND */
+  .phase-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .phase-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .phase-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Footer */
+  .footer {
+    padding: 20px 32px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* Eclipse banner within card */
+  .eclipse-banner {
+    background: linear-gradient(90deg, rgba(255,69,0,0.15), rgba(255,69,0,0.05));
+    border-top: 2px solid rgba(255,69,0,0.4);
+    padding: 6px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--eclipse);
+    letter-spacing: 0.3px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <h1>🏕️ Iceland Stay &amp; Booking Dashboard</h1>
+    <p>Chasing the Eclipse · August 3–15, 2026 · Jill &amp; Jeff McCardel</p>
+  </div>
+  <div class="header-badges">
+    <span class="badge badge-eclipse">☀️ Eclipse Aug 12</span>
+    <span class="badge badge-teal">🚐 FIAT Doblò Maxi Camper</span>
+    <span class="badge badge-amber">12 Nights · ~950 km</span>
+    <span class="badge badge-red">⚠️ Book Hellissandur NOW</span>
+  </div>
+</div>
+
+<!-- ALERT BANNER -->
+<div class="alert-banner">
+  <span class="icon">🔴</span>
+  <span><strong>CRITICAL:</strong> Hellissandur Campsite for Aug 11–12 (eclipse night) will fill months in advance. Reserve immediately at <strong>tjalda.is</strong> or contact Hellissandur directly. This is your highest booking priority.</span>
+</div>
+
+<!-- STATS ROW -->
+<div class="stats-row">
+  <div class="stat-card"><span class="val">12</span><span class="lbl">Nights</span></div>
+  <div class="stat-card"><span class="val">~$25</span><span class="lbl">Avg/Person/Night</span></div>
+  <div class="stat-card"><span class="val">~$600</span><span class="lbl">Est. Camp Total</span></div>
+  <div class="stat-card"><span class="val">2</span><span class="lbl">Ferry Crossings</span></div>
+  <div class="stat-card"><span class="val">2:07</span><span class="lbl">Eclipse Totality</span></div>
+  <div class="stat-card"><span class="val">tjalda.is</span><span class="lbl">Official Booking</span></div>
+  <div class="stat-card"><span class="val">7+</span><span class="lbl">Advance Bookings</span></div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="showPanel('nights')">🗓️ Night-by-Night</button>
+  <button class="tab" onclick="showPanel('advance')">📋 Advance Bookings</button>
+  <button class="tab" onclick="showPanel('tips')">💡 Tips &amp; Savings</button>
+  <button class="tab" onclick="showPanel('costs')">💰 Cost Estimate</button>
+</div>
+
+<!-- PANEL: NIGHTS -->
+<div class="content">
+<div class="panel active" id="panel-nights">
+
+  <div class="phase-legend">
+    <div class="phase-item"><div class="phase-dot" style="background:#64ffda"></div> Reykjavik &amp; Golden Circle</div>
+    <div class="phase-item"><div class="phase-dot" style="background:#b57bee"></div> Snæfellsnes Peninsula</div>
+    <div class="phase-item"><div class="phase-dot" style="background:#5dacf5"></div> Westfjords</div>
+    <div class="phase-item"><div class="phase-dot" style="background:#ff4500"></div> Eclipse Night ⭐</div>
+    <div class="phase-item"><div class="phase-dot" style="background:#ffb347"></div> Return South</div>
+  </div>
+
+  <div class="nights-grid">
+
+    <!-- NIGHT 1-2: Reykjavik -->
+    <div class="night-card">
+      <div class="card-header" style="border-left: 4px solid #64ffda;">
+        <div class="day-badge">AUG 3–5 · NIGHTS 1–2</div>
+        <h3>Reykjavik</h3>
+        <span class="urgency-pill urgency-high">BOOK EARLY</span>
+      </div>
+      <div class="card-body">
+        <div class="campsite-name">Reykjavik Campsite (Laugardalur)</div>
+        <div class="campsite-location">📍 Sundlaugavegur 32, Reykjavik · 10 min from city center</div>
+        <div class="facilities">
+          <span class="facility-tag has">🚿 Hot Showers</span>
+          <span class="facility-tag has">🚽 Flush Toilets</span>
+          <span class="facility-tag has">🍳 Kitchen</span>
+          <span class="facility-tag has">♻️ Laundry</span>
+          <span class="facility-tag has">🔌 EV Charging</span>
+          <span class="facility-tag has">🛒 Walking to shops</span>
+        </div>
+        <div class="info-row"><span class="label">Cost per night</span><span class="value cost">~$55–70 (2 people)</span></div>
+        <div class="info-row"><span class="label">Capacity</span><span class="value">Large — but fills Aug peak</span></div>
+        <div class="info-row"><span class="label">Booking</span><span class="value">tjalda.is or direct</span></div>
+        <div class="info-row"><span class="label">Highlights</span><span class="value note">Next to Laugardalslaug geothermal pool &amp; botanical garden</span></div>
+        <a href="https://www.tjalda.is" target="_blank" class="book-btn">📅 Book on Tjalda</a>
+        <a href="https://reykjavikcampsite.is" target="_blank" class="book-btn secondary">🌐 Direct</a>
+      </div>
+    </div>
+
+    <!-- NIGHT 3: Þingvellir/Árnes -->
+    <div class="night-card">
+      <div class="card-header" style="border-left: 4px solid #64ffda;">
+        <div class="day-badge">AUG 5–6 · NIGHT 3</div>
+        <h3>Golden Circle</h3>
+        <span class="urgency-pill urgency-medium">BOOK AHEAD</span>
+      </div>
+      <div class="card-body">
+        <div class="campsite-name">Þingvellir National Park Campsite</div>
+        <div class="campsite-location">📍 Þingvellir, Golden Circle · UNESCO World Heritage Site</div>
+        <div class="facilities">
+          <span class="facility-tag has">🚿 Showers</span>
+          <span class="facility-tag has">🚽 Toilets</span>
+          <span class="facility-tag has">🍳 Basic kitchen</span>
+          <span class="facility-tag">No laundry</span>
+        </div>
+        <div class="info-row"><span class="label">Cost per night</span><span class="value cost">~$45–60 (2 people)</span></div>
+        <div class="info-row"><span class="label">Alt option</span><span class="value">Árnes Campsite near Selfoss (more facilities)</span></div>
+        <div class="info-row"><span class="label">Booking</span><span class="value">tjalda.is (Þingvellir required)</span></div>
+        <div class="info-row"><span class="label">Why here</span><span class="value note">Mid-rift tectonic plates, midnight sun, Geysir &amp; Gullfoss nearby</span></div>
+        <a href="https://www.tjalda.is" target="_blank" class="book-btn">📅 Book on Tjalda</a>
+        <a href="https://www.thingvellir.is/en/" target="_blank" class="book-btn secondary">🌐 Park Site</a>
+      </div>
+    </div>
+
+    <!-- NIGHT 4: Grundarfjörður -->
+    <div class="night-card">
+      <div class="card-header" style="border-left: 4px solid #b57bee;">
+        <div class="day-badge">AUG 6–7 · NIGHT 4</div>
+        <h3>Snæfellsnes — Kirkjufell</h3>
+        <span class="urgency-pill urgency-medium">BOOK AHEAD</span>
+      </div>
+      <div class="card-body">
+        <div class="campsite-name">Grundarfjörður Campsite</div>
+        <div class="campsite-location">📍 Grundarfjörður village, Snæfellsnes · Next to Kirkjufell mountain</div>
+        <div class="facilities">
+          <span class="facility-tag has">🚿 Hot Showers</span>
+          <span class="facility-tag has">🚽 Flush Toilets</span>
+          <span class="facility-tag has">🍳 Kitchen</span>
+          <span class="facility-tag has">♻️ Laundry</span>
+          <span class="facility-tag has">🛒 Small shops nearby</span>
+        </div>
+        <div class="info-row"><span class="label">Cost per night</span><span class="value cost">~$40–55 (2 people)</span></div>
+        <div class="info-row"><span class="label">Booking</span><span class="value">tjalda.is or via campsite</span></div>
+        <div class="info-row"><span class="label">Highlights</span><span class="value note">Kirkjufell "Game of Thrones" mountain, whale watching, Bæjarfoss waterfall</span></div>
+        <a href="https://www.tjalda.is" target="_blank" class="book-btn">📅 Book on Tjalda</a>
+      </div>
+    </div>
+
+    <!-- NIGHT 5: Hellissandur FIRST STAY -->
+    <div class="night-card">
+      <div class="card-header" style="border-left: 4px solid #b57bee;">
+        <div class="day-badge">AUG 7–8 · NIGHT 5</div>
+        <h3>Snæfellsjökull Tip</h3>
+        <span class="urgency-pill urgency-high">BOOK EARLY</span>
+      </div>
+      <div class="card-body">
+        <div class="campsite-name">Hellissandur Campsite</div>
+        <div class="campsite-location">📍 Hellissandur, NW Snæfellsnes · 5 min from Öndverðarnes lighthouse</div>
+        <div class="facilities">
+          <span class="facility-tag has">🚿 Showers</span>
+          <span class="facility-tag has">🚽 Toilets</span>
+          <span class="facility-tag has">🍳 Basic kitchen</span>
+          <span class="facility-tag">Small site</span>
+        </div>
+        <div class="info-row"><span class="label">Cost per night</span><span class="value cost">~$35–45 (2 people)</span></div>
+        <div class="info-row"><span class="label">Note</span><span class="value">Also scout ferry departure logistics for next day</span></div>
+        <div class="info-row"><span class="label">Highlights</span><span class="value note">Snæfellsjökull glacier hike, lava tube caves, dramatic coastline</span></div>
+        <a href="https://www.tjalda.is" target="_blank" class="book-btn">📅 Book on Tjalda</a>
+      </div>
+    </div>
+
+    <!-- NIGHT 6: Stykkishólmur -->
+    <div class="night-card">
+      <div class="card-header" style="border-left: 4px solid #b57bee;">
+        <div class="day-badge">AUG 8–9 · NIGHT 6</div>
+        <h3>Stykkishólmur (Pre-Ferry)</h3>
+        <span class="urgency-pill urgency-medium">BOOK AHEAD</span>
+      </div>
+      <div class="card-body">
+        <div class="campsite-name">Stykkishólmur Campsite (Höfðagarður)</div>
+        <div class="campsite-location">📍 Stykkishólmur town · Near Baldur Ferry terminal</div>
+        <div class="facilities">
+          <span class="facility-tag has">🚿 Hot Showers</span>
+          <span class="facility-tag has">🚽 Flush Toilets</span>
+          <span class="facility-tag has">🍳 Kitchen</span>
+          <span class="facility-tag has">🛒 Town center</span>
+        </div>
+        <div class="info-row"><span class="label">Cost per night</span><span class="value cost">~$40–55 (2 people)</span></div>
+        <div class="info-row"><span class="label">Ferry next AM</span><span class="value">Baldur Ferry departs ~9:00 AM — check schedule</span></div>
+        <div class="info-row"><span class="label">Booking</span><span class="value">tjalda.is</span></div>
+        <div class="info-row"><span class="label">Highlights</span><span class="value note">Norwegian House museum, harbor, Súgandafjörður views</span></div>
+        <a href="https://www.tjalda.is" target="_blank" class="book-btn">📅 Book on Tjalda</a>
+        <a href="https://www.seatours.is/baldur-ferry/" target="_blank" class="book-btn secondary">⛴️ Book Ferry</a>
+      </div>
+    </div>
+
+    <!-- NIGHT 7: Patreksfjörður -->
+    <div class="night-card">
+      <div class="card-header" style="border-left: 4px solid #5dacf5;">
+        <div class="day-badge">AUG 9–10 · NIGHT 7</div>
+        <h3>Westfjords Entry</h3>
+        <span class="urgency-pill urgency-low">FLEXIBLE</span>
+      </div>
+      <div class="card-body">
+        <div class="campsite-name">Patreksfjörður Campsite</div>
+        <div class="campsite-location">📍 Patreksfjörður, Westfjords · Near Látrabjarg bird cliffs</div>
+        <div class="facilities">
+          <span class="facility-tag has">🚿 Showers</span>
+          <span class="facility-tag has">🚽 Toilets</span>
+          <span class="facility-tag has">🍳 Kitchen</span>
+          <span class="facility-tag">Remote — stock up on supplies</span>
+        </div>
+        <div class="info-row"><span class="label">Cost per night</span><span class="value cost">~$35–45 (2 people)</span></div>
+        <div class="info-row"><span class="label">Note</span><span class="value">Alt: Flókalundur Campsite near Brjánslækur ferry landing</span></div>
+        <div class="info-row"><span class="label">Highlights</span><span class="value note">Látrabjarg (westernmost point of Europe), puffins, Rauðasandur red sand beach</span></div>
+        <a href="https://www.tjalda.is" target="_blank" class="book-btn">📅 Book on Tjalda</a>
+      </div>
+    </div>
+
+    <!-- NIGHTS 8-9: Ísafjörður -->
+    <div class="night-card">
+      <div class="card-header" style="border-left: 4px solid #5dacf5;">
+        <div class="day-badge">AUG 10–12 · NIGHTS 8–9</div>
+        <h3>Ísafjörður</h3>
+        <span class="urgency-pill urgency-high">BOOK EARLY</span>
+      </div>
+      <div class="card-body">
+        <div class="campsite-name">Ísafjörður Campsite (Heimatorg)</div>
+        <div class="campsite-location">📍 Ísafjörður, Capital of Westfjords · Full services</div>
+        <div class="facilities">
+          <span class="facility-tag has">🚿 Hot Showers</span>
+          <span class="facility-tag has">🚽 Flush Toilets</span>
+          <span class="facility-tag has">🍳 Full Kitchen</span>
+          <span class="facility-tag has">♻️ Laundry</span>
+          <span class="facility-tag has">🛒 Grocery stores</span>
+          <span class="facility-tag has">🍽️ Restaurants</span>
+        </div>
+        <div class="info-row"><span class="label">Cost per night</span><span class="value cost">~$45–60 (2 people)</span></div>
+        <div class="info-row"><span class="label">Restaurant</span><span class="value">Tjöruhúsið — must reserve in advance!</span></div>
+        <div class="info-row"><span class="label">Booking</span><span class="value">tjalda.is</span></div>
+        <div class="info-row"><span class="label">Highlights</span><span class="value note">Historic wooden houses, Hornstrandir ferry base, world-class fish stew at Tjöruhúsið</span></div>
+        <a href="https://www.tjalda.is" target="_blank" class="book-btn">📅 Book on Tjalda</a>
+        <a href="https://www.tjoruhusid.is/" target="_blank" class="book-btn secondary">🍽️ Tjöruhúsið</a>
+      </div>
+    </div>
+
+    <!-- NIGHTS 10-11: HELLISSANDUR ECLIPSE — CRITICAL -->
+    <div class="night-card eclipse-card">
+      <div class="eclipse-banner">☀️ TOTAL SOLAR ECLIPSE · AUGUST 12, 2026 · 2:07 MIN TOTALITY</div>
+      <div class="card-header" style="border-left: 4px solid #ff4500;">
+        <div class="day-badge">AUG 12–13 · NIGHTS 10–11</div>
+        <h3>Eclipse Night — Hellissandur</h3>
+        <span class="urgency-pill urgency-critical">🔴 BOOK NOW</span>
+      </div>
+      <div class="card-body">
+        <div class="campsite-name">Hellissandur Campsite</div>
+        <div class="campsite-location">📍 Hellissandur, NW Snæfellsnes · Inside totality zone · Glacier backdrop</div>
+        <div class="facilities">
+          <span class="facility-tag has">🚿 Showers</span>
+          <span class="facility-tag has">🚽 Toilets</span>
+          <span class="facility-tag has">🍳 Basic kitchen</span>
+          <span class="facility-tag">Small &amp; will fill FAST</span>
+        </div>
+        <div class="info-row"><span class="label">Eclipse time</span><span class="value" style="color:var(--eclipse)">~3:15 PM local · Totality 2 min 7 sec</span></div>
+        <div class="info-row"><span class="label">Viewing spot</span><span class="value">Öndverðarnes Lighthouse — 5 min drive</span></div>
+        <div class="info-row"><span class="label">Cost per night</span><span class="value cost">Likely surge pricing — est. $50–80/night</span></div>
+        <div class="info-row"><span class="label">Backup option</span><span class="value">Rif village camping (1 km west, also in totality)</span></div>
+        <div class="eclipse-note">
+          ⚠️ <strong>Eclipse tourism will flood Snæfellsnes.</strong> Every campsite within the totality zone will be fully booked. Hellissandur is the closest town to the optimal viewing point. Contact the campsite directly now and also try tjalda.is. If fully booked, consider Rif, Ólafsvík, or Grundarfjörður (partial totality at edge of zone). You could also consider arriving Aug 11 evening and sleeping in the van at Öndverðarnes parking area as a backup.
+        </div>
+        <a href="https://www.tjalda.is" target="_blank" class="book-btn">📅 Book on Tjalda</a>
+        <a href="https://www.visitsnafellsnes.is/" target="_blank" class="book-btn secondary">🌐 Snæfellsnes Tourism</a>
+      </div>
+    </div>
+
+    <!-- NIGHT 12: Húsafell -->
+    <div class="night-card">
+      <div class="card-header" style="border-left: 4px solid #ffb347;">
+        <div class="day-badge">AUG 13–14 · NIGHT 12</div>
+        <h3>Húsafell (Inland)</h3>
+        <span class="urgency-pill urgency-medium">BOOK AHEAD</span>
+      </div>
+      <div class="card-body">
+        <div class="campsite-name">Húsafell Campsite</div>
+        <div class="campsite-location">📍 Húsafell, Borgarfjörður · Near Hraunfossar lava waterfalls</div>
+        <div class="facilities">
+          <span class="facility-tag has">🚿 Hot Showers</span>
+          <span class="facility-tag has">🚽 Flush Toilets</span>
+          <span class="facility-tag has">🍳 Kitchen</span>
+          <span class="facility-tag has">♨️ Geothermal pool</span>
+          <span class="facility-tag has">🧖 Spa access</span>
+        </div>
+        <div class="info-row"><span class="label">Cost per night</span><span class="value cost">~$50–65 (2 people)</span></div>
+        <div class="info-row"><span class="label">Bonus</span><span class="value">Húsafell Stone (ancient strength test), INTO the Glacier tour nearby</span></div>
+        <div class="info-row"><span class="label">Highlights</span><span class="value note">Hraunfossar &amp; Barnafoss falls, Langjökull ice cave, Víðgelmir lava tube</span></div>
+        <a href="https://www.tjalda.is" target="_blank" class="book-btn">📅 Book on Tjalda</a>
+        <a href="https://www.husafell.is/" target="_blank" class="book-btn secondary">🌐 Húsafell Resort</a>
+      </div>
+    </div>
+
+    <!-- NIGHT 13: Reykjavik Return -->
+    <div class="night-card">
+      <div class="card-header" style="border-left: 4px solid #ffb347;">
+        <div class="day-badge">AUG 14–15 · NIGHT 13</div>
+        <h3>Reykjavik — Final Night</h3>
+        <span class="urgency-pill urgency-high">BOOK EARLY</span>
+      </div>
+      <div class="card-body">
+        <div class="campsite-name">Reykjavik Campsite (Laugardalur)</div>
+        <div class="campsite-location">📍 Sundlaugavegur 32 · Near Blue Lagoon transfer point</div>
+        <div class="facilities">
+          <span class="facility-tag has">🚿 Hot Showers</span>
+          <span class="facility-tag has">🚽 Flush Toilets</span>
+          <span class="facility-tag has">🍳 Full Kitchen</span>
+          <span class="facility-tag has">♻️ Laundry</span>
+        </div>
+        <div class="info-row"><span class="label">Cost per night</span><span class="value cost">~$55–70 (2 people)</span></div>
+        <div class="info-row"><span class="label">Departure</span><span class="value">Aug 15 — Alaska Air from KEF</span></div>
+        <div class="info-row"><span class="label">Day plan</span><span class="value note">Blue Lagoon (evening Aug 14), city last dinner, pack van for return</span></div>
+        <a href="https://www.tjalda.is" target="_blank" class="book-btn">📅 Book on Tjalda</a>
+        <a href="https://reykjavikcampsite.is" target="_blank" class="book-btn secondary">🌐 Direct</a>
+      </div>
+    </div>
+
+  </div><!-- /nights-grid -->
+</div>
+
+<!-- PANEL: ADVANCE BOOKINGS -->
+<div class="panel" id="panel-advance">
+  <div class="section-title">📋 Advance Booking Checklist</div>
+  <div class="section-sub">Everything that needs to be reserved before you leave. Sorted by priority.</div>
+
+  <table class="advance-table">
+    <thead>
+      <tr>
+        <th>Priority</th>
+        <th>What to Book</th>
+        <th>When</th>
+        <th>Est. Cost</th>
+        <th>Lead Time</th>
+        <th>Book Here</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="priority-row">
+        <td class="urgency-cell"><span class="urgency-pill urgency-critical">🔴 NOW</span></td>
+        <td class="item-name">Hellissandur Campsite<br><span style="font-size:11px;color:var(--muted);font-weight:400">Aug 11–13 · Eclipse nights</span></td>
+        <td class="item-date">TODAY</td>
+        <td class="item-cost">~$50–80/night</td>
+        <td>Books out 6+ months before eclipse</td>
+        <td class="item-link"><a href="https://www.tjalda.is" target="_blank">tjalda.is ↗</a></td>
+      </tr>
+      <tr class="priority-row">
+        <td class="urgency-cell"><span class="urgency-pill urgency-critical">🔴 NOW</span></td>
+        <td class="item-name">Blue Lagoon<br><span style="font-size:11px;color:var(--muted);font-weight:400">Aug 14 evening — premium slot</span></td>
+        <td class="item-date">TODAY</td>
+        <td class="item-cost">~$80–160/person</td>
+        <td>Fully pre-booked months ahead in August</td>
+        <td class="item-link"><a href="https://www.bluelagoon.com/spa-experiences" target="_blank">bluelagoon.com ↗</a></td>
+      </tr>
+      <tr>
+        <td class="urgency-cell"><span class="urgency-pill urgency-high">🟠 ASAP</span></td>
+        <td class="item-name">Baldur Ferry (2× crossings)<br><span style="font-size:11px;color:var(--muted);font-weight:400">Stykkishólmur→Brjánslækur &amp; return</span></td>
+        <td class="item-date">ASAP</td>
+        <td class="item-cost">~$130–180 per crossing (van + 2 people)</td>
+        <td>Camper vans need advance booking</td>
+        <td class="item-link"><a href="https://www.seatours.is/baldur-ferry/" target="_blank">seatours.is ↗</a></td>
+      </tr>
+      <tr>
+        <td class="urgency-cell"><span class="urgency-pill urgency-high">🟠 ASAP</span></td>
+        <td class="item-name">Tjöruhúsið Restaurant<br><span style="font-size:11px;color:var(--muted);font-weight:400">Ísafjörður · Legendary fish stew buffet</span></td>
+        <td class="item-date">ASAP</td>
+        <td class="item-cost">~$40–55/person</td>
+        <td>Fills within days of opening in spring</td>
+        <td class="item-link"><a href="https://www.tjoruhusid.is/" target="_blank">tjoruhusid.is ↗</a></td>
+      </tr>
+      <tr>
+        <td class="urgency-cell"><span class="urgency-pill urgency-high">🟠 ASAP</span></td>
+        <td class="item-name">Reykjavik Campsite<br><span style="font-size:11px;color:var(--muted);font-weight:400">Nights 1–2 (Aug 3–5) and Night 13 (Aug 14–15)</span></td>
+        <td class="item-date">1–3 months ahead</td>
+        <td class="item-cost">~$55–70/night</td>
+        <td>Peak season fills quickly</td>
+        <td class="item-link"><a href="https://reykjavikcampsite.is" target="_blank">reykjavikcampsite.is ↗</a></td>
+      </tr>
+      <tr>
+        <td class="urgency-cell"><span class="urgency-pill urgency-medium">🟡 2–3 MO</span></td>
+        <td class="item-name">Fridheimar Greenhouse Dinner<br><span style="font-size:11px;color:var(--muted);font-weight:400">Golden Circle · Tomato farm &amp; horse show</span></td>
+        <td class="item-date">2–3 months ahead</td>
+        <td class="item-cost">~$50–65/person</td>
+        <td>Popular year-round, advance booking required</td>
+        <td class="item-link"><a href="https://www.fridheimar.is/en" target="_blank">fridheimar.is ↗</a></td>
+      </tr>
+      <tr>
+        <td class="urgency-cell"><span class="urgency-pill urgency-medium">🟡 2–3 MO</span></td>
+        <td class="item-name">Glacier Hike — Snæfellsjökull<br><span style="font-size:11px;color:var(--muted);font-weight:400">Summit climb with guide · Aug 7 or 8</span></td>
+        <td class="item-date">2–3 months ahead</td>
+        <td class="item-cost">~$90–150/person</td>
+        <td>Weather-dependent, limited group sizes</td>
+        <td class="item-link"><a href="https://www.snaefellsjokulltours.is" target="_blank">snaefellsjokulltours.is ↗</a></td>
+      </tr>
+      <tr>
+        <td class="urgency-cell"><span class="urgency-pill urgency-medium">🟡 2–3 MO</span></td>
+        <td class="item-name">Sky Lagoon<br><span style="font-size:11px;color:var(--muted);font-weight:400">Reykjavik area · Alternative to Blue Lagoon (arrival day)</span></td>
+        <td class="item-date">1–2 months ahead</td>
+        <td class="item-cost">~$60–100/person</td>
+        <td>Good arrival-day activity (close to KEF)</td>
+        <td class="item-link"><a href="https://www.skylagoon.com" target="_blank">skylagoon.com ↗</a></td>
+      </tr>
+      <tr>
+        <td class="urgency-cell"><span class="urgency-pill urgency-medium">🟡 2–3 MO</span></td>
+        <td class="item-name">Fontana Geothermal Baths<br><span style="font-size:11px;color:var(--muted);font-weight:400">Laugarvatn · Golden Circle day · Rye bread baked in ground</span></td>
+        <td class="item-date">1 month ahead</td>
+        <td class="item-cost">~$30–45/person</td>
+        <td>Popular but usually available</td>
+        <td class="item-link"><a href="https://www.fontana.is/en/" target="_blank">fontana.is ↗</a></td>
+      </tr>
+      <tr>
+        <td class="urgency-cell"><span class="urgency-pill urgency-low">🟢 FLEXIBLE</span></td>
+        <td class="item-name">Hornstrandir Day Hike Boat<br><span style="font-size:11px;color:var(--muted);font-weight:400">From Ísafjörður · Remote nature reserve</span></td>
+        <td class="item-date">1–2 months ahead</td>
+        <td class="item-cost">~$80–120/person round trip</td>
+        <td>Weather permitting, limited boats</td>
+        <td class="item-link"><a href="https://www.westfjords.is/en/plan-your-trip/transport/hornstrandir" target="_blank">westfjords.is ↗</a></td>
+      </tr>
+      <tr>
+        <td class="urgency-cell"><span class="urgency-pill urgency-low">🟢 FLEXIBLE</span></td>
+        <td class="item-name">Secret Lagoon (Gamla Laugin)<br><span style="font-size:11px;color:var(--muted);font-weight:400">Flúðir · Iceland's oldest geothermal pool</span></td>
+        <td class="item-date">A few weeks</td>
+        <td class="item-cost">~$25/person</td>
+        <td>Usually available, but book to guarantee</td>
+        <td class="item-link"><a href="https://secretlagoon.is/" target="_blank">secretlagoon.is ↗</a></td>
+      </tr>
+      <tr>
+        <td class="urgency-cell"><span class="urgency-pill urgency-low">🟢 FLEXIBLE</span></td>
+        <td class="item-name">Matur og Drykkur Restaurant<br><span style="font-size:11px;color:var(--muted);font-weight:400">Reykjavik · Traditional Icelandic new wave cuisine</span></td>
+        <td class="item-date">2–4 weeks ahead</td>
+        <td class="item-cost">~$60–90/person</td>
+        <td>Popular but usually manageable</td>
+        <td class="item-link"><a href="https://maturogdrykkur.is/" target="_blank">maturogdrykkur.is ↗</a></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- PANEL: TIPS -->
+<div class="panel" id="panel-tips">
+  <div class="section-title">💡 Camping Tips &amp; Money Savers</div>
+  <div class="section-sub">Insider advice for campervan travel in Iceland</div>
+
+  <div class="two-col">
+    <div class="info-box">
+      <h3>🃏 Iceland Camping Card</h3>
+      <p>A single card that gives 28 nights of camping for 2 people across 170+ campsites. At roughly <span class="highlight">€199–249</span> (≈$215–270), it can save you significant money on campsite fees vs. paying individually (~$45–70/night per site).</p>
+      <ul>
+        <li><strong>Best for:</strong> Trips 10+ nights staying at member sites</li>
+        <li><strong>Note:</strong> Not all sites are members — Hellissandur is smaller and may not participate. Verify at campingcard.is</li>
+        <li><strong>Buy online:</strong> campingcard.is — also available at some campsites</li>
+      </ul>
+      <a href="https://www.campingcard.is/" target="_blank" class="book-btn" style="margin-top:12px">🃏 Get Camping Card</a>
+    </div>
+
+    <div class="info-box">
+      <h3>⛺ Tjalda.is — Official Booking Platform</h3>
+      <p>Iceland's official campsite booking system. Most registered campsites use it. <span class="highlight">Always book registered campsites</span> — wild camping in campervans is illegal in Iceland since 2015.</p>
+      <ul>
+        <li>Search by region or campsite name</li>
+        <li>Some sites also have direct booking</li>
+        <li>Payment on arrival often accepted, but <strong>reservation still required</strong> in peak season</li>
+        <li>App available for iOS and Android</li>
+      </ul>
+      <a href="https://www.tjalda.is" target="_blank" class="book-btn" style="margin-top:12px">📅 Go to Tjalda.is</a>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="info-box">
+      <h3>🚿 Shower Strategy</h3>
+      <p>Iceland's municipal pools (<em>sundlaugar</em>) are everywhere and usually charge $5–10 for entry — this <span class="highlight">includes hot showers and hot tubs</span>. Even if you don't swim, many travelers buy pool entry just for a hot shower and soak.</p>
+      <ul>
+        <li><strong>Grundarfjörður Pool:</strong> Small town pool, very local</li>
+        <li><strong>Ísafjörður Pool:</strong> Great full facility</li>
+        <li><strong>Laugardalur Pool, Reykjavik:</strong> One of the best in Iceland</li>
+        <li>Campsite showers: usually coin-operated (200–500 ISK ≈ $1.50–$3.50)</li>
+      </ul>
+    </div>
+
+    <div class="info-box">
+      <h3>🛒 Food &amp; Grocery Tips</h3>
+      <p>Eating out in Iceland is expensive. <span class="highlight">Plan 60–70% meals in the van</span> for the Westfjords especially.</p>
+      <ul>
+        <li><strong>Bónus:</strong> Cheapest grocery chain (yellow pig logo) — stock up in Reykjavik and Ísafjörður</li>
+        <li><strong>Krónan:</strong> Second cheapest</li>
+        <li><strong>Nettó:</strong> Also budget-friendly</li>
+        <li><strong>Gas stations (N1, Orkan):</strong> Have hot food — surprisingly decent &amp; convenient</li>
+        <li><strong>Westfjords:</strong> Very limited grocery options — bring several days of supplies from Ísafjörður</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="info-box">
+      <h3>📱 Useful Apps to Download</h3>
+      <ul>
+        <li><strong>Tjalda:</strong> Campsite booking &amp; map</li>
+        <li><strong>Vedur.is:</strong> Iceland's official weather app (trust this over Google)</li>
+        <li><strong>112.is:</strong> Iceland's emergency safety app — register your trip</li>
+        <li><strong>Maps.me:</strong> Offline maps (essential for Westfjords)</li>
+        <li><strong>Safetravel.is:</strong> Road conditions &amp; travel alerts</li>
+        <li><strong>Eclipse Safari:</strong> Eclipse path &amp; timing app</li>
+      </ul>
+    </div>
+
+    <div class="info-box">
+      <h3>🌡️ August Weather &amp; What to Pack</h3>
+      <ul>
+        <li><strong>Average temp:</strong> 10–14°C (50–57°F) — bring layers</li>
+        <li><strong>Rain:</strong> Pack waterproof jacket &amp; pants — it will rain</li>
+        <li><strong>Wind:</strong> Stronger than expected, especially Westfjords</li>
+        <li><strong>Eclipse glasses:</strong> Bring certified ISO 12312-2 glasses — may be hard to find locally</li>
+        <li><strong>Midnight sun:</strong> Blackout blinds for the van are essential — sun barely sets in August</li>
+        <li><strong>Hiking boots:</strong> Waterproof, broken-in</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <h3>🐱 Cat Cafés &amp; Unexpected Gems</h3>
+    <p>A few spots that align with your interests that don't need advance booking but are worth seeking out:</p>
+    <ul>
+      <li><strong>Kattakaffihúsið (Cat Café, Reykjavik):</strong> Iceland's first cat café — cozy, resident cats, great coffee. No booking usually needed.</li>
+      <li><strong>Settlement Centre, Borgarnes:</strong> Excellent Viking history exhibit — on your drive south from Westfjords. Budget 2 hours.</li>
+      <li><strong>Icelandic Goat Center, Háafell:</strong> Near Húsafell — interactive farm with endangered Icelandic goats. Charming and free.</li>
+      <li><strong>Reykjavik Botanical Garden (Grasagarðurinn):</strong> Free, beautiful, adjacent to Laugardalur Campsite — perfect arrival-day garden walk.</li>
+      <li><strong>Wool &amp; Craft shops:</strong> Handprjónasambandið (Handknitting Association of Iceland) in Reykjavik for authentic lopapeysa sweaters.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- PANEL: COSTS -->
+<div class="panel" id="panel-costs">
+  <div class="section-title">💰 Budget Estimate</div>
+  <div class="section-sub">Rough cost breakdown for 2 people, 12 nights. All figures in USD approximations.</div>
+
+  <div class="two-col">
+    <div class="info-box">
+      <h3>🏕️ Camping &amp; Accommodation</h3>
+      <table class="cost-table">
+        <tr><td>12 nights camping (avg $50/night for 2)</td><td>~$600</td></tr>
+        <tr><td>OR Iceland Camping Card (28 nights/2 people)</td><td>~$230</td></tr>
+        <tr><td>Campsite showers (coin-op, extra)</td><td>~$20–40</td></tr>
+        <tr class="total"><td><strong>TOTAL — Camping</strong></td><td><strong>~$600–650</strong></td></tr>
+        <tr class="total"><td><strong>TOTAL — With Camping Card</strong></td><td><strong>~$250–270</strong></td></tr>
+      </table>
+    </div>
+
+    <div class="info-box">
+      <h3>🚐 Van &amp; Transport</h3>
+      <table class="cost-table">
+        <tr><td>FIAT Doblò Maxi rental (12 nights, Guide to Iceland)</td><td>~$1,800–2,200</td></tr>
+        <tr><td>Fuel (~950 km, diesel, est. 7L/100km)</td><td>~$150–200</td></tr>
+        <tr><td>Baldur Ferry (van + 2 people × 2 crossings)</td><td>~$260–360</td></tr>
+        <tr><td>Parking &amp; campsite access fees</td><td>~$30–50</td></tr>
+        <tr class="total"><td><strong>TOTAL — Van &amp; Transport</strong></td><td><strong>~$2,250–2,800</strong></td></tr>
+      </table>
+    </div>
+
+    <div class="info-box">
+      <h3>🧖 Experiences &amp; Activities</h3>
+      <table class="cost-table">
+        <tr><td>Blue Lagoon (2 people, premium)</td><td>~$200–280</td></tr>
+        <tr><td>Sky Lagoon (2 people)</td><td>~$120–180</td></tr>
+        <tr><td>Glacier hike — Snæfellsjökull (2 people)</td><td>~$180–260</td></tr>
+        <tr><td>Hornstrandir day boat (2 people)</td><td>~$160–200</td></tr>
+        <tr><td>Fontana / Secret Lagoon (2 people)</td><td>~$50–80</td></tr>
+        <tr><td>Municipal pools / sundlaugar (est. 5 visits)</td><td>~$50–70</td></tr>
+        <tr class="total"><td><strong>TOTAL — Experiences</strong></td><td><strong>~$760–1,070</strong></td></tr>
+      </table>
+    </div>
+
+    <div class="info-box">
+      <h3>🍽️ Food &amp; Dining</h3>
+      <table class="cost-table">
+        <tr><td>Groceries for van meals (~$40/day × 10 days)</td><td>~$400</td></tr>
+        <tr><td>Tjöruhúsið dinner (2 people)</td><td>~$80–100</td></tr>
+        <tr><td>Fridheimar greenhouse (2 people)</td><td>~$100–120</td></tr>
+        <tr><td>Matur og Drykkur, Reykjavik (2 people)</td><td>~$120–160</td></tr>
+        <tr><td>Gas station meals / coffee (est. 8 stops)</td><td>~$100–130</td></tr>
+        <tr><td>Misc dining out (2–3 other meals)</td><td>~$100–150</td></tr>
+        <tr class="total"><td><strong>TOTAL — Food</strong></td><td><strong>~$900–1,060</strong></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <h3>📊 Grand Total Estimate</h3>
+    <table class="cost-table">
+      <tr><td>Camping &amp; Accommodation</td><td>~$600</td></tr>
+      <tr><td>Van Rental &amp; Transport</td><td>~$2,250–2,800</td></tr>
+      <tr><td>Experiences &amp; Activities</td><td>~$760–1,070</td></tr>
+      <tr><td>Food &amp; Dining</td><td>~$900–1,060</td></tr>
+      <tr><td>Miscellaneous / buffer</td><td>~$200–300</td></tr>
+      <tr class="total"><td><strong>ESTIMATED TRIP TOTAL (2 people)</strong></td><td><strong>~$4,710–5,830</strong></td></tr>
+      <tr class="total"><td><strong>Flights (Alaska Air PDX→KEF, already booked)</strong></td><td><strong>Not included</strong></td></tr>
+    </table>
+    <p style="color:var(--muted);font-size:12px;margin-top:12px">💡 Tip: Using the Iceland Camping Card saves up to $370. Cooking most meals in the van saves another $400–500. A budget-conscious trip could come in under $4,000.</p>
+  </div>
+</div>
+</div><!-- /content -->
+
+<div class="footer">
+  Built for Jill &amp; Jeff McCardel · Chasing the Eclipse 2026 · Iceland Aug 3–15 · <a href="computer:///sessions/cool-gracious-lovelace/mnt/outputs/iceland-trip-map.html" style="color:var(--teal);text-decoration:none">View Interactive Map ↗</a>
+</div>
+
+<script>
+function showPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>
