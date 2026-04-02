@@ -133,6 +133,7 @@
     .stat-num { font-size: 1.1rem; color: #4a9e8a; font-weight: bold; }
     .stat-label { font-size: 0.65rem; color: #8ba8a0; text-transform: uppercase; letter-spacing: 0.5px; }
 
+    /* Custom popup styles */
     .leaflet-popup-content-wrapper {
       background: #1e2438 !important;
       border: 1px solid #4a7c6f !important;
@@ -158,6 +159,14 @@
       font-size: 0.7rem; color: #6b9f8a;
       font-style: italic;
     }
+
+    .ferry-note {
+      padding: 8px 16px;
+      background: #1a2835;
+      border-left: 3px solid #3b82f6;
+      margin: 0;
+    }
+    .ferry-note p { font-size: 0.72rem; color: #93c5fd; }
   </style>
 </head>
 <body>
@@ -180,6 +189,7 @@
       <div class="stat"><div class="stat-num">2</div><div class="stat-label">Ferry legs</div></div>
       <div class="stat"><div class="stat-num">2:07</div><div class="stat-label">Totality</div></div>
     </div>
+
     <div class="phase-legend">
       <h3>Route Phases</h3>
       <div class="legend-item"><div class="legend-dot" style="background:#4a9e8a"></div>Reykjavik & Golden Circle</div>
@@ -188,11 +198,14 @@
       <div class="legend-item"><div class="legend-dot" style="background:#dc2626"></div>🌑 Eclipse Zone</div>
       <div class="legend-item"><div class="legend-dot" style="background:#d97706"></div>Return South</div>
     </div>
+
     <div class="sidebar-header">Day by Day</div>
     <div id="day-list"></div>
   </div>
 </div>
+
 <script>
+  // ─── PHASES ───────────────────────────────────────────────────────────────
   const PHASES = {
     reykjavik: { color: '#4a9e8a', label: 'Reykjavik & Golden Circle' },
     snaefellsnes: { color: '#7c3aed', label: 'Snaefellsnes Peninsula' },
@@ -200,85 +213,357 @@
     eclipse: { color: '#dc2626', label: 'Eclipse Zone' },
     return: { color: '#d97706', label: 'Return South' },
   };
+
+  // ─── STOPS DATA ───────────────────────────────────────────────────────────
   const stops = [
-    { id: 'kef', name: 'KEF Airport / Keflavik', lat: 63.986, lng: -22.605, day: 1, date: 'Aug 3', phase: 'reykjavik', desc: 'Arrive 5:31 AM on Alaska Air. Pick up the Doblo, stock up at Netto.', camp: null, isAirport: true },
-    { id: 'bluelagoon', name: 'Blue Lagoon', lat: 63.880, lng: -22.449, day: 1, date: 'Aug 3', phase: 'reykjavik', desc: 'First stop! Arrive ~7:30 AM at opening - lowest prices, least crowds. Pre-book in advance.', camp: null },
-    { id: 'reykjavik', name: 'Reykjavik', lat: 64.136, lng: -21.895, day: '1-2', date: 'Aug 3-4', phase: 'reykjavik', desc: 'Botanical Garden (free), Settlement Exhibition, National Museum, Reykjavik CatWalk tour, Floran Cafe in the greenhouse.', camp: 'Camp: Reykjavik Campsite, Laugardalur - full facilities, reserve ahead' },
-    { id: 'reykjadalur', name: 'Reykjadalur Hot River', lat: 64.033, lng: -21.220, day: 12, date: 'Aug 14', phase: 'return', desc: 'Free geothermal river you can soak in. 3km hike each way, bring swimwear and towels.', camp: null },
-    { id: 'fridheimar', name: 'Fridheimar Greenhouse', lat: 64.126, lng: -20.935, day: 3, date: 'Aug 5', phase: 'reykjavik', desc: 'Organic tomato farm restaurant - famous tomato soup served inside the greenhouse. Reserve ahead.', camp: null },
-    { id: 'thingvellir', name: 'Thingvellir National Park', lat: 64.255, lng: -21.130, day: 3, date: 'Aug 5', phase: 'reykjavik', desc: 'UNESCO site - first Icelandic parliament (930 AD), rift valley between tectonic plates.', camp: null },
-    { id: 'geysir', name: 'Geysir / Strokkur', lat: 64.310, lng: -20.302, day: 3, date: 'Aug 5', phase: 'reykjavik', desc: 'Strokkur erupts every 5-10 minutes. The original geyser.', camp: null },
-    { id: 'gullfoss', name: 'Gullfoss Waterfall', lat: 64.327, lng: -20.122, day: 3, date: 'Aug 5', phase: 'reykjavik', desc: 'Iconic two-tiered waterfall on the Hvita river.', camp: 'Camp: Arnes Campsite near Selfoss' },
-    { id: 'borgarnes', name: 'Borgarnes Settlement Centre', lat: 64.538, lng: -21.916, day: 4, date: 'Aug 6', phase: 'snaefellsnes', desc: "One of Iceland's best history museums - Norse sagas, Egil's Saga. Audio guides included.", camp: null },
-    { id: 'ytri-tunga', name: 'Ytri-Tunga Seal Beach', lat: 64.852, lng: -23.050, day: 4, date: 'Aug 6', phase: 'snaefellsnes', desc: 'Hidden gem - harbour seals lounging on the rocks. Free, very few tourists.', camp: null },
-    { id: 'grundarfjordur', name: 'Grundarfjordur', lat: 64.924, lng: -23.243, day: '4-5', date: 'Aug 6-7', phase: 'snaefellsnes', desc: 'Central Snaefellsnes town with Kirkjufell mountain visible from camp.', camp: 'Camp: Grundarfjordur Campsite - showers, walking distance to harbour' },
-    { id: 'kirkjufell', name: 'Kirkjufell Mountain', lat: 64.927, lng: -23.305, day: 5, date: 'Aug 7', phase: 'snaefellsnes', desc: "Iceland's most photographed mountain. Trail around the base is easy; summit requires a guide.", camp: null },
-    { id: 'arnarstapi', name: 'Arnarstapi to Hellnar Hike', lat: 64.763, lng: -23.622, day: 5, date: 'Aug 7', phase: 'snaefellsnes', desc: 'Spectacular 2.5km coastal hike through lava arches, sea cliffs, puffin colonies. About 1 hour.', camp: null },
-    { id: 'djupalonsandur', name: 'Djupalonsandur Beach', lat: 64.754, lng: -23.896, day: 5, date: 'Aug 7', phase: 'snaefellsnes', desc: 'Black pebble beach with dramatic lava rock maze and shipwreck remnants.', camp: null },
-    { id: 'hellissandur', name: 'Hellissandur - Eclipse Base', lat: 64.904, lng: -23.907, day: '5,9,10,11', date: 'Aug 7, 11-12', phase: 'eclipse', desc: 'Your eclipse viewing base! Up to 2 min 7 sec of totality on Aug 12 ~3:15 PM. Ondverdarnes Lighthouse for best views with glacier backdrop.', camp: 'Camp: Hellissandur Campsite - showers, kitchen, laundry. RESERVE AHEAD for eclipse week!', isEclipse: true },
-    { id: 'snaefellsjokull', name: 'Snaefellsjokull Glacier Hike', lat: 64.808, lng: -23.775, day: 6, date: 'Aug 8', phase: 'snaefellsnes', desc: 'Guided glacier hike on the volcano from Jules Verne\'s Journey to the Center of the Earth. Crampons provided. Book in advance.', camp: null },
-    { id: 'stykkisholmur', name: 'Stykkisholmur', lat: 65.076, lng: -22.730, day: '6-7', date: 'Aug 8-9', phase: 'snaefellsnes', desc: 'Charming harbour town with colourful houses. Library of Water art installation. Excellent fish market and restaurants.', camp: 'Camp: Stykkisholmur Campsite - great facilities, 5 min walk to restaurants' },
-    { id: 'baldur-ferry', name: 'Baldur Ferry Crossing', lat: 65.200, lng: -22.900, day: 7, date: 'Aug 9', phase: 'westfjords', desc: 'Ferry from Stykkisholmur to Brjanslakur (2.5 hrs). Drive van aboard. Book in advance at seatours.is.', camp: null, isFerry: true },
-    { id: 'brjanslakur', name: 'Brjanslakur Ferry Arrival', lat: 65.511, lng: -23.096, day: 7, date: 'Aug 9', phase: 'westfjords', desc: 'Westfjords ferry terminal. Drive south to Patreksfjordur area.', camp: null },
-    { id: 'raudasandur', name: 'Raudasandur Red Sand Beach', lat: 65.486, lng: -24.013, day: 7, date: 'Aug 9', phase: 'westfjords', desc: 'Rare rust-red sand beach from iron-rich volcanic sand. Very few tourists make it here.', camp: 'Camp: Patreksfjordur Campsite' },
-    { id: 'hellulaug', name: 'Hellulaug Hot Spring', lat: 65.630, lng: -22.110, day: 8, date: 'Aug 10', phase: 'westfjords', desc: 'Free natural hot pool right at the ocean edge. No facilities, no fee - just warm geothermal water and fjord views.', camp: null },
-    { id: 'dynjandi', name: 'Dynjandi Waterfall', lat: 65.738, lng: -23.183, day: 8, date: 'Aug 10', phase: 'westfjords', desc: 'Crown jewel of the Westfjords - 100m cascade shaped like a bridal veil. Hike past 6 smaller waterfalls to reach the base.', camp: null },
-    { id: 'isafjordur', name: 'Isafjordur', lat: 66.075, lng: -23.131, day: '8-9', date: 'Aug 10-11', phase: 'westfjords', desc: 'Westfjords capital. Heritage Museum. Dinner at Tjoruhusid - best seafood in Iceland. Reserve well ahead!', camp: 'Camp: Isafjordur Campsite - newly renovated kitchen and bathrooms' },
-    { id: 'hornstrandir', name: 'Hornstrandir (optional)', lat: 66.350, lng: -22.500, day: 9, date: 'Aug 11', phase: 'westfjords', desc: 'Optional: day trip ferry from Isafjordur. Untouched wilderness with tame Arctic foxes. Book with Borea Adventures.', camp: null, isOptional: true },
-    { id: 'reykholt', name: 'Reykholt & Snorrastofa', lat: 64.665, lng: -21.297, day: 11, date: 'Aug 13', phase: 'return', desc: "Village of Snorri Sturluson (Iceland's great medieval scholar). Visit Snorrastofa museum and his original 13th-century bathing pool.", camp: null },
-    { id: 'deildartunguhver', name: 'Deildartunguhver / Krauma Baths', lat: 64.676, lng: -21.410, day: 11, date: 'Aug 13', phase: 'return', desc: 'Highest-flow hot spring in Europe (180L/100C per second). Krauma geothermal baths next door - quieter Blue Lagoon alternative.', camp: 'Camp: Husafell Campsite (hot tubs on site!)' },
+    {
+      id: 'kef', name: 'KEF Airport / Keflavík', lat: 63.986, lng: -22.605,
+      day: 1, date: 'Aug 3', phase: 'reykjavik',
+      desc: 'Arrive 5:31 AM on Alaska Air. Pick up the Doblo, stock up at Nettó.',
+      camp: null, isAirport: true
+    },
+    {
+      id: 'bluelagoon', name: 'Blue Lagoon', lat: 63.880, lng: -22.449,
+      day: 1, date: 'Aug 3', phase: 'reykjavik',
+      desc: 'First stop! Arrive ~7:30 AM at opening — lowest prices, least crowds. Pre-book in advance.',
+      camp: null
+    },
+    {
+      id: 'reykjavik', name: 'Reykjavik', lat: 64.136, lng: -21.895,
+      day: '1–2', date: 'Aug 3–4', phase: 'reykjavik',
+      desc: 'Botanical Garden (free), Settlement Exhibition, National Museum, Reykjavik CatWalk tour, Flóran Café in the greenhouse.',
+      camp: 'Camp: Reykjavik Campsite, Laugardalur — full facilities, reserve ahead'
+    },
+    {
+      id: 'reykjadalur', name: 'Reykjadalur Hot River', lat: 64.033, lng: -21.220,
+      day: 12, date: 'Aug 14', phase: 'return',
+      desc: 'Free geothermal river you can soak in. 3km hike each way, bring swimwear and towels.',
+      camp: null
+    },
+    {
+      id: 'fridheimar', name: 'Fridheimar Greenhouse', lat: 64.126, lng: -20.935,
+      day: 3, date: 'Aug 5', phase: 'reykjavik',
+      desc: 'Organic tomato farm restaurant — famous tomato soup served inside the greenhouse. Reserve ahead.',
+      camp: null
+    },
+    {
+      id: 'thingvellir', name: 'Þingvellir National Park', lat: 64.255, lng: -21.130,
+      day: 3, date: 'Aug 5', phase: 'reykjavik',
+      desc: 'UNESCO site — first Icelandic parliament (930 AD), rift valley between tectonic plates.',
+      camp: null
+    },
+    {
+      id: 'geysir', name: 'Geysir / Strokkur', lat: 64.310, lng: -20.302,
+      day: 3, date: 'Aug 5', phase: 'reykjavik',
+      desc: 'Strokkur erupts every 5–10 minutes. The original geyser.',
+      camp: null
+    },
+    {
+      id: 'gullfoss', name: 'Gullfoss Waterfall', lat: 64.327, lng: -20.122,
+      day: 3, date: 'Aug 5', phase: 'reykjavik',
+      desc: 'Iconic two-tiered waterfall on the Hvítá river.',
+      camp: 'Camp: Árnes Campsite near Selfoss'
+    },
+    {
+      id: 'borgarnes', name: 'Borgarnes Settlement Centre', lat: 64.538, lng: -21.916,
+      day: 4, date: 'Aug 6', phase: 'snaefellsnes',
+      desc: 'One of Iceland\'s best history museums — Norse sagas, Egil\'s Saga. Audio guides included.',
+      camp: null
+    },
+    {
+      id: 'ytri-tunga', name: 'Ytri-Tunga Seal Beach', lat: 64.852, lng: -23.050,
+      day: 4, date: 'Aug 6', phase: 'snaefellsnes',
+      desc: 'Hidden gem — harbour seals lounging on the rocks. Free, very few tourists.',
+      camp: null
+    },
+    {
+      id: 'grundarfjordur', name: 'Grundarfjörður', lat: 64.924, lng: -23.243,
+      day: '4–5', date: 'Aug 6–7', phase: 'snaefellsnes',
+      desc: 'Central Snaefellsnes town with Kirkjufell mountain visible from camp.',
+      camp: 'Camp: Grundarfjörður Campsite — showers, walking distance to harbour'
+    },
+    {
+      id: 'kirkjufell', name: 'Kirkjufell Mountain', lat: 64.927, lng: -23.305,
+      day: 5, date: 'Aug 7', phase: 'snaefellsnes',
+      desc: 'Iceland\'s most photographed mountain. Trail around the base is easy; summit requires a guide.',
+      camp: null
+    },
+    {
+      id: 'arnarstapi', name: 'Arnarstapi → Hellnar Hike', lat: 64.763, lng: -23.622,
+      day: 5, date: 'Aug 7', phase: 'snaefellsnes',
+      desc: 'Spectacular 2.5km coastal hike through lava arches, sea cliffs, puffin colonies. About 1 hour.',
+      camp: null
+    },
+    {
+      id: 'djupalonsandur', name: 'Djúpalónssandur Beach', lat: 64.754, lng: -23.896,
+      day: 5, date: 'Aug 7', phase: 'snaefellsnes',
+      desc: 'Black pebble beach with dramatic lava rock maze and shipwreck remnants.',
+      camp: null
+    },
+    {
+      id: 'hellissandur', name: '🌑 Hellissandur — Eclipse Base', lat: 64.904, lng: -23.907,
+      day: '5,9,10,11', date: 'Aug 7, 11–12', phase: 'eclipse',
+      desc: 'Your eclipse viewing base! Up to 2 min 7 sec of totality on Aug 12 ~3:15 PM. Ondverðarnes Lighthouse nearby for best views with glacier backdrop.',
+      camp: 'Camp: Hellissandur Campsite — showers, kitchen, laundry. RESERVE AHEAD for eclipse week!',
+      isEclipse: true
+    },
+    {
+      id: 'snaefellsjokull', name: 'Snæfellsjökull Glacier Hike', lat: 64.808, lng: -23.775,
+      day: 6, date: 'Aug 8', phase: 'snaefellsnes',
+      desc: 'Guided glacier hike on the volcano from Jules Verne\'s "Journey to the Center of the Earth." Crampons provided. Book in advance.',
+      camp: null
+    },
+    {
+      id: 'stykkisholmur', name: 'Stykkishólmur', lat: 65.076, lng: -22.730,
+      day: '6–7', date: 'Aug 8–9', phase: 'snaefellsnes',
+      desc: 'Charming harbour town with colourful houses. Library of Water art installation. Excellent fish market and restaurants.',
+      camp: 'Camp: Stykkishólmur Campsite — great facilities, 5 min walk to restaurants'
+    },
+    {
+      id: 'baldur-ferry', name: '⛴ Baldur Ferry Crossing', lat: 65.200, lng: -22.900,
+      day: 7, date: 'Aug 9', phase: 'westfjords',
+      desc: 'Ferry from Stykkishólmur → Brjánslækur (2.5 hrs). Drive van aboard. Pass hundreds of tiny islands. Book in advance at seatours.is.',
+      camp: null, isFerry: true
+    },
+    {
+      id: 'brjanslakur', name: 'Brjánslækur (Ferry arrival)', lat: 65.511, lng: -23.096,
+      day: 7, date: 'Aug 9', phase: 'westfjords',
+      desc: 'Westfjords ferry terminal. Drive south to Patreksfjörður area.',
+      camp: null
+    },
+    {
+      id: 'raudasandur', name: 'Rauðasandur Red Sand Beach', lat: 65.486, lng: -24.013,
+      day: 7, date: 'Aug 9', phase: 'westfjords',
+      desc: 'Rare rust-red sand beach from iron-rich volcanic sand, at the base of dramatic cliffs. Very few tourists make it here.',
+      camp: 'Camp: Patreksfjörður Campsite'
+    },
+    {
+      id: 'hellulaug', name: 'Hellulaug Hot Spring', lat: 65.630, lng: -22.110,
+      day: 8, date: 'Aug 10', phase: 'westfjords',
+      desc: 'Free natural hot pool right at the ocean\'s edge. No facilities, no fee — just warm geothermal water and fjord views.',
+      camp: null
+    },
+    {
+      id: 'dynjandi', name: 'Dynjandi Waterfall', lat: 65.738, lng: -23.183,
+      day: 8, date: 'Aug 10', phase: 'westfjords',
+      desc: 'Crown jewel of the Westfjords — 100m cascade shaped like a bridal veil. Hike past 6 smaller waterfalls to reach the base.',
+      camp: null
+    },
+    {
+      id: 'isafjordur', name: 'Ísafjörður', lat: 66.075, lng: -23.131,
+      day: '8–9', date: 'Aug 10–11', phase: 'westfjords',
+      desc: 'Westfjords "capital." Westfjords Heritage Museum (old wooden buildings). Dinner at Tjöruhúsið — best seafood in Iceland. Reserve well ahead!',
+      camp: 'Camp: Ísafjörður Campsite — newly renovated kitchen and bathrooms'
+    },
+    {
+      id: 'hornstrandir', name: 'Hornstrandir (optional)', lat: 66.350, lng: -22.500,
+      day: 9, date: 'Aug 11', phase: 'westfjords',
+      desc: 'Optional: day trip ferry from Ísafjörður. Untouched wilderness with tame Arctic foxes. 2–3 hr guided hike. Book with Borea Adventures.',
+      camp: null, isOptional: true
+    },
+    {
+      id: 'reykholt', name: 'Reykholt & Snorrastofa', lat: 64.665, lng: -21.297,
+      day: 11, date: 'Aug 13', phase: 'return',
+      desc: 'Village of Snorri Sturluson (Iceland\'s great medieval scholar). Visit Snorrastofa museum and his original 13th-century bathing pool.',
+      camp: null
+    },
+    {
+      id: 'deildartunguhver', name: 'Deildartunguhver / Krauma Baths', lat: 64.676, lng: -21.410,
+      day: 11, date: 'Aug 13', phase: 'return',
+      desc: 'Highest-flow hot spring in Europe (180L/100°C per second). Krauma geothermal baths next door use this water — quieter Blue Lagoon alternative.',
+      camp: 'Camp: Húsafell Campsite (hot tubs on site!)'
+    },
   ];
+
+  // ─── DAY GROUPS ───────────────────────────────────────────────────────────
   const days = [
     { day: 1, date: 'Mon Aug 3', phase: 'reykjavik', title: 'Arrive KEF', stops: ['kef','bluelagoon','reykjavik'] },
     { day: 2, date: 'Tue Aug 4', phase: 'reykjavik', title: 'Reykjavik', stops: ['reykjavik'] },
     { day: 3, date: 'Wed Aug 5', phase: 'reykjavik', title: 'Golden Circle', stops: ['fridheimar','thingvellir','geysir','gullfoss'] },
-    { day: 4, date: 'Thu Aug 6', phase: 'snaefellsnes', title: 'Borgarnes to Snaefellsnes', stops: ['borgarnes','ytri-tunga','grundarfjordur'] },
+    { day: 4, date: 'Thu Aug 6', phase: 'snaefellsnes', title: 'Borgarnes → Snaefellsnes', stops: ['borgarnes','ytri-tunga','grundarfjordur'] },
     { day: 5, date: 'Fri Aug 7', phase: 'snaefellsnes', title: 'Snaefellsnes Highlights', stops: ['kirkjufell','arnarstapi','djupalonsandur','hellissandur'] },
-    { day: 6, date: 'Sat Aug 8', phase: 'snaefellsnes', title: 'Glacier Hike + Stykkisholmur', stops: ['snaefellsjokull','stykkisholmur'] },
-    { day: 7, date: 'Sun Aug 9', phase: 'westfjords', title: 'Baldur Ferry to Westfjords', stops: ['baldur-ferry','brjanslakur','raudasandur'] },
+    { day: 6, date: 'Sat Aug 8', phase: 'snaefellsnes', title: 'Glacier Hike + Stykkishólmur', stops: ['snaefellsjokull','stykkisholmur'] },
+    { day: 7, date: 'Sun Aug 9', phase: 'westfjords', title: '⛴ Baldur Ferry to Westfjords', stops: ['baldur-ferry','brjanslakur','raudasandur'] },
     { day: 8, date: 'Mon Aug 10', phase: 'westfjords', title: 'Westfjords Deep Dive', stops: ['hellulaug','dynjandi','isafjordur'] },
     { day: 9, date: 'Tue Aug 11', phase: 'westfjords', title: 'Hornstrandir + Eclipse Eve', stops: ['hornstrandir','hellissandur'] },
-    { day: 10, date: 'Wed Aug 12', phase: 'eclipse', title: 'ECLIPSE DAY', stops: ['hellissandur'] },
+    { day: 10, date: 'Wed Aug 12', phase: 'eclipse', title: '🌑 ECLIPSE DAY', stops: ['hellissandur'] },
     { day: 11, date: 'Thu Aug 13', phase: 'return', title: 'Reykholt + Krauma', stops: ['reykholt','deildartunguhver'] },
     { day: 12, date: 'Fri Aug 14', phase: 'return', title: 'Reykjadalur + Reykjavik', stops: ['reykjadalur','reykjavik'] },
     { day: 13, date: 'Sat Aug 15', phase: 'return', title: 'Depart KEF', stops: ['kef'] },
   ];
-  const PHASES = { reykjavik:{color:'#4a9e8a'}, snaefellsnes:{color:'#7c3aed'}, westfjords:{color:'#2563eb'}, eclipse:{color:'#dc2626'}, return:{color:'#d97706'} };
-  const map = L.map('map',{center:[65.0,-22.5],zoom:7});
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'CARTO',subdomains:'abcd',maxZoom:19}).addTo(map);
-  const routeOrder=['kef','bluelagoon','reykjavik','fridheimar','thingvellir','geysir','gullfoss','reykjavik','borgarnes','ytri-tunga','grundarfjordur','kirkjufell','arnarstapi','djupalonsandur','hellissandur','snaefellsjokull','stykkisholmur','brjanslakur','raudasandur','hellulaug','dynjandi','isafjordur','hellissandur','reykholt','deildartunguhver','reykjadalur','reykjavik','kef'];
-  const ferryRoute=[[65.076,-22.730],[65.200,-22.900],[65.350,-23.000],[65.511,-23.096]];
-  const returnRoute=[[66.075,-23.131],[65.700,-23.000],[65.300,-22.500],[65.076,-22.730],[64.904,-23.907]];
-  const stopMap={}; stops.forEach(s=>{stopMap[s.id]=s;});
-  const driveCoords=[]; routeOrder.forEach(id=>{const s=stopMap[id];if(s)driveCoords.push([s.lat,s.lng]);});
-  L.polyline(driveCoords,{color:'#4a9e8a',weight:2.5,opacity:0.5}).addTo(map);
-  L.polyline(ferryRoute,{color:'#3b82f6',weight:3,opacity:0.8,dashArray:'8 6'}).addTo(map);
-  L.polyline(returnRoute,{color:'#7c3aed',weight:2,opacity:0.5,dashArray:'6 4'}).addTo(map);
-  L.marker([65.28,-23.0],{icon:L.divIcon({html:'<div style="color:#60a5fa;font-size:0.65rem;font-weight:bold;white-space:nowrap;text-shadow:1px 1px 3px #000">Baldur Ferry</div>',className:'',iconAnchor:[30,8]})}).addTo(map);
-  const markers={};
-  stops.forEach(stop=>{
-    const color=(PHASES[stop.phase]||{color:'#888'}).color;
-    const size=stop.isEclipse?18:stop.isAirport?14:12;
-    const border=stop.isEclipse?'3px solid #fbbf24':stop.isOptional?'2px dashed '+color:'2px solid rgba(255,255,255,0.3)';
-    const emoji=stop.isAirport?'V':stop.isEclipse?'E':stop.isFerry?'F':stop.isOptional?'?':'';
-    const icon=L.divIcon({html:'<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+color+';border:'+border+';display:flex;align-items:center;justify-content:center;font-size:8px;box-shadow:0 0 6px rgba(0,0,0,0.5);">'+emoji+'</div>',className:'',iconAnchor:[size/2,size/2]});
-    const popup='<div style="color:#e8e4d9;font-family:Georgia"><b>'+stop.name+'</b><br><small style="color:#8ba8a0">Day '+stop.day+' - '+stop.date+'</small><br><span style="font-size:0.8rem;color:#a0b8b0">'+stop.desc+'</span>'+(stop.camp?'<br><i style="color:#6b9f8a;font-size:0.75rem">'+stop.camp+'</i>':'')+(stop.isEclipse?'<br><b style="color:#fcd34d">ECLIPSE AUG 12 ~3:15 PM - 2 min 7 sec totality</b>':'')+'</div>';
-    markers[stop.id]=L.marker([stop.lat,stop.lng],{icon}).addTo(map).bindPopup(popup,{maxWidth:260});
+
+  // ─── MAP INIT ─────────────────────────────────────────────────────────────
+  const map = L.map('map', {
+    center: [65.0, -22.5],
+    zoom: 7,
+    zoomControl: true
   });
-  const dayList=document.getElementById('day-list');
-  days.forEach(d=>{
-    const color=(PHASES[d.phase]||{color:'#888'}).color;
-    const card=document.createElement('div');
-    card.style.cssText='border-bottom:1px solid #2c3555;cursor:pointer;padding:10px 16px;';
-    const stopNames=d.stops.map(id=>{const s=stopMap[id];return s?s.name.replace(' - Eclipse Base',''):''}).filter((v,i,a)=>a.indexOf(v)===i);
-    card.innerHTML='<div style="display:flex;align-items:center;gap:10px"><div style="width:24px;height:24px;border-radius:50%;background:'+color+';display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:bold;color:white;flex-shrink:0">'+d.day+'</div><div><div style="font-size:0.82rem;color:#c8ddd8;font-weight:bold">'+d.title+'</div><div style="font-size:0.7rem;color:#8ba8a0">'+d.date+'</div></div></div><div style="padding:4px 0 0 34px">'+stopNames.map(n=>'<div style="font-size:0.72rem;color:#a0b8b0;padding:1px 0">'+n+'</div>').join('')+'</div>';
-    card.addEventListener('click',()=>{
-      const s=stopMap[d.stops[0]]; if(s){map.flyTo([s.lat,s.lng],10,{duration:1.2}); setTimeout(()=>{if(markers[d.stops[0]])markers[d.stops[0]].openPopup();},1300);}
-      document.querySelectorAll('[data-day]').forEach(c=>c.style.background=''); card.style.background='#252d45';
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap contributors, © CARTO',
+    subdomains: 'abcd',
+    maxZoom: 19
+  }).addTo(map);
+
+  // ─── ROUTE LINE ───────────────────────────────────────────────────────────
+  // Main driving route (ordered waypoints)
+  const routeOrder = [
+    'kef','bluelagoon','reykjavik','fridheimar','thingvellir','geysir','gullfoss',
+    'reykjavik','borgarnes','ytri-tunga','grundarfjordur','kirkjufell','arnarstapi',
+    'djupalonsandur','hellissandur','snaefellsjokull','stykkisholmur',
+    'brjanslakur','raudasandur','hellulaug','dynjandi','isafjordur',
+    'hellissandur','reykholt','deildartunguhver','reykjadalur','reykjavik','kef'
+  ];
+
+  // Ferry route (dashed)
+  const ferryRoute = [
+    [65.076, -22.730], // Stykkishólmur
+    [65.200, -22.900], // mid-bay
+    [65.350, -23.000], // mid-bay
+    [65.511, -23.096]  // Brjánslækur
+  ];
+
+  // Return from Westfjords to Hellissandur
+  const returnRoute = [
+    [66.075, -23.131], // Ísafjörður
+    [65.700, -23.000],
+    [65.300, -22.500],
+    [65.076, -22.730], // Stykkishólmur
+    [64.904, -23.907]  // Hellissandur
+  ];
+
+  // Build driving route coords
+  const stopMap = {};
+  stops.forEach(s => { stopMap[s.id] = s; });
+
+  const driveCoords = [];
+  routeOrder.forEach(id => {
+    const s = stopMap[id];
+    if (s) driveCoords.push([s.lat, s.lng]);
+  });
+
+  L.polyline(driveCoords, {
+    color: '#4a9e8a', weight: 2.5, opacity: 0.5, dashArray: null
+  }).addTo(map);
+
+  L.polyline(ferryRoute, {
+    color: '#3b82f6', weight: 3, opacity: 0.8, dashArray: '8 6'
+  }).addTo(map);
+
+  L.polyline(returnRoute, {
+    color: '#7c3aed', weight: 2, opacity: 0.5, dashArray: '6 4'
+  }).addTo(map);
+
+  // Ferry label
+  L.marker([65.28, -23.0], {
+    icon: L.divIcon({
+      html: '<div style="color:#60a5fa;font-size:0.65rem;font-weight:bold;white-space:nowrap;text-shadow:1px 1px 3px #000">⛴ Baldur Ferry</div>',
+      className: '', iconAnchor: [30, 8]
+    })
+  }).addTo(map);
+
+  // ─── MARKERS ─────────────────────────────────────────────────────────────
+  const markers = {};
+
+  stops.forEach(stop => {
+    const phase = PHASES[stop.phase];
+    const color = phase ? phase.color : '#888';
+
+    let size = stop.isEclipse ? 18 : stop.isAirport ? 14 : 12;
+    let border = stop.isEclipse ? '3px solid #fbbf24' : stop.isOptional ? '2px dashed ' + color : '2px solid rgba(255,255,255,0.3)';
+    let emoji = stop.isAirport ? '✈' : stop.isEclipse ? '🌑' : stop.isFerry ? '⛴' : stop.isOptional ? '?' : '';
+
+    const icon = L.divIcon({
+      html: `<div style="
+        width:${size}px;height:${size}px;
+        border-radius:50%;
+        background:${color};
+        border:${border};
+        display:flex;align-items:center;justify-content:center;
+        font-size:${stop.isEclipse ? '10px' : '8px'};
+        box-shadow:0 0 ${stop.isEclipse ? '12px ' + color : '6px rgba(0,0,0,0.5)'};
+        ${stop.isEclipse ? 'animation:glow 1.5s infinite alternate;' : ''}
+      ">${emoji}</div>`,
+      className: '',
+      iconAnchor: [size/2, size/2]
     });
+
+    const popupContent = `
+      <div class="popup-title">${stop.name}</div>
+      <div class="popup-day">Day ${stop.day} — ${stop.date}</div>
+      <div class="popup-desc">${stop.desc}</div>
+      ${stop.isEclipse ? '<div class="popup-eclipse">🌑 ECLIPSE AUG 12 ~3:15 PM · 2 min 7 sec totality</div>' : ''}
+      ${stop.isOptional ? '<div style="margin-top:5px;font-size:0.7rem;color:#f59e0b;font-style:italic">⭐ Optional add-on</div>' : ''}
+      ${stop.camp ? '<div class="popup-camp">🏕 ' + stop.camp + '</div>' : ''}
+    `;
+
+    const marker = L.marker([stop.lat, stop.lng], { icon })
+      .addTo(map)
+      .bindPopup(popupContent, { maxWidth: 260, className: 'dark-popup' });
+
+    markers[stop.id] = marker;
+  });
+
+  // ─── SIDEBAR DAYS ─────────────────────────────────────────────────────────
+  const dayList = document.getElementById('day-list');
+
+  days.forEach(d => {
+    const phase = PHASES[d.phase];
+    const color = phase ? phase.color : '#888';
+
+    const card = document.createElement('div');
+    card.className = 'day-card';
+    card.style.setProperty('--phase-color', color);
+
+    const stopNames = d.stops.map(id => {
+      const s = stopMap[id];
+      return s ? s.name.replace('🌑 ', '').replace(' — Eclipse Base', '') : '';
+    }).filter((v,i,a) => a.indexOf(v) === i);
+
+    card.innerHTML = `
+      <div class="day-header">
+        <div class="day-num">${d.day}</div>
+        <div>
+          <div class="day-title">${d.title}</div>
+          <div class="day-date">${d.date}</div>
+        </div>
+      </div>
+      <div class="day-stops">
+        ${stopNames.map(n => `<div class="stop-item"><div class="stop-dot"></div>${n}</div>`).join('')}
+      </div>
+    `;
+
+    card.addEventListener('click', () => {
+      // Fly to first stop of this day
+      const firstStopId = d.stops[0];
+      const firstStop = stopMap[firstStopId];
+      if (firstStop) {
+        map.flyTo([firstStop.lat, firstStop.lng], 10, { duration: 1.2 });
+        setTimeout(() => {
+          if (markers[firstStopId]) markers[firstStopId].openPopup();
+        }, 1300);
+      }
+      document.querySelectorAll('.day-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+    });
+
     dayList.appendChild(card);
   });
-  L.circle([64.93,-23.80],{radius:30000,color:'#dc2626',fillColor:'#dc2626',fillOpacity:0.08,weight:1.5,dashArray:'6 4'}).addTo(map).bindTooltip('Eclipse totality zone');
+
+  // Eclipse glow CSSk
+  const style = document.createElement('style');
+  style.textContent = `@keyframes glow { from { box-shadow: 0 0 8px #dc2626; } to { box-shadow: 0 0 20px #fbbf24, 0 0 30px #dc2626; } }`;
+  document.head.appendChild(style);
+
+  // ─── ECLIPSE ZONE CIRCLE ─────────────────────────────────────────────────
+  L.circle([64.93, -23.80], {
+    radius: 30000,
+    color: '#dc2626',
+    fillColor: '#dc2626',
+    fillOpacity: 0.08,
+    weight: 1.5,
+    dashArray: '6 4'
+  }).addTo(map).bindTooltip('🌑 Eclipse totality zone', { permanent: false });
 </script>
 </body>
-  </html>
+</html>
