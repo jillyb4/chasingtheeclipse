@@ -1,952 +1,1303 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🏕️ Iceland Stay & Booking Dashboard — Chasing the Eclipse 2026</title>
-<style>
-  :root {
-    --bg: #0f1117;
-    --surface: #1a1f2e;
-    --surface2: #222840;
-    --border: #2e3657;
-    --text: #e8eaf6;
-    --muted: #8892b0;
-    --teal: #64ffda;
-    --purple: #b57bee;
-    --blue: #5dacf5;
-    --amber: #ffb347;
-    --red: #ff6b6b;
-    --yellow: #ffd700;
-    --green: #69f0ae;
-    --eclipse: #ff4500;
-    --eclipse-glow: rgba(255,69,0,0.25);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    font-size: 14px;
-    line-height: 1.5;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Iceland Aug 2026 — Trip Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      min-height: 100vh;
+    }
+    header {
+      background: linear-gradient(135deg, #1a3a5c 0%, #0d2137 50%, #1a2f1a 100%);
+      padding: 28px 32px 20px;
+      border-bottom: 2px solid #21262d;
+    }
+    header h1 {
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: #f0f6fc;
+      letter-spacing: -0.5px;
+    }
+    header p {
+      color: #8b949e;
+      margin-top: 4px;
+      font-size: 0.95rem;
+    }
+    .stats-row {
+      display: flex;
+      gap: 16px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+    .stat-chip {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 0.82rem;
+      color: #c9d1d9;
+    }
+    .stat-chip span { color: #58a6ff; font-weight: 600; }
 
-  /* HEADER */
-  .header {
-    background: linear-gradient(135deg, #0f1117 0%, #1a1f2e 50%, #0d1b3e 100%);
-    border-bottom: 1px solid var(--border);
-    padding: 24px 32px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-  .header-left h1 {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--teal);
-    letter-spacing: -0.5px;
-  }
-  .header-left p {
-    color: var(--muted);
-    font-size: 13px;
-    margin-top: 3px;
-  }
-  .header-badges {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-  .badge {
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.3px;
-  }
-  .badge-teal { background: rgba(100,255,218,0.12); color: var(--teal); border: 1px solid rgba(100,255,218,0.25); }
-  .badge-amber { background: rgba(255,179,71,0.12); color: var(--amber); border: 1px solid rgba(255,179,71,0.25); }
-  .badge-eclipse { background: rgba(255,69,0,0.15); color: var(--eclipse); border: 1px solid rgba(255,69,0,0.35); }
-  .badge-red { background: rgba(255,107,107,0.12); color: var(--red); border: 1px solid rgba(255,107,107,0.25); }
+    nav {
+      background: #161b22;
+      border-bottom: 1px solid #21262d;
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+      padding: 0 16px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      /* fade hint on right edge so hidden tabs are discoverable */
+      -webkit-mask-image: linear-gradient(to right, #000 92%, transparent 100%);
+      mask-image: linear-gradient(to right, #000 92%, transparent 100%);
+    }
+    nav button {
+      background: none;
+      border: none;
+      color: #8b949e;
+      padding: 16px 20px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      min-height: 48px;
+      -webkit-tap-highlight-color: rgba(88,166,255,0.15);
+    }
+    nav button:hover { color: #c9d1d9; }
+    nav button.active {
+      color: #58a6ff;
+      border-bottom-color: #58a6ff;
+    }
 
-  /* ALERT BANNER */
-  .alert-banner {
-    background: linear-gradient(90deg, rgba(255,69,0,0.18), rgba(255,69,0,0.08));
-    border-left: 4px solid var(--eclipse);
-    border-bottom: 1px solid rgba(255,69,0,0.2);
-    padding: 12px 32px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-  }
-  .alert-banner .icon { font-size: 18px; }
-  .alert-banner strong { color: var(--eclipse); }
+    .tab-content { display: none; padding: 28px 32px; max-width: 1100px; }
+    .tab-content.active { display: block; }
 
-  /* STATS ROW */
-  .stats-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: 1px;
-    background: var(--border);
-    border-bottom: 1px solid var(--border);
-  }
-  .stat-card {
-    background: var(--surface);
-    padding: 14px 20px;
-    text-align: center;
-  }
-  .stat-card .val {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--teal);
-    display: block;
-  }
-  .stat-card .lbl {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: var(--muted);
-    margin-top: 2px;
-  }
+    h2 { font-size: 1.25rem; color: #f0f6fc; margin-bottom: 16px; font-weight: 600; }
+    h3 { font-size: 1rem; color: #c9d1d9; margin-bottom: 10px; font-weight: 600; }
 
-  /* SECTION TABS */
-  .tabs {
-    display: flex;
-    gap: 0;
-    background: var(--surface);
-    border-bottom: 2px solid var(--border);
-    padding: 0 24px;
-    overflow-x: auto;
-  }
-  .tab {
-    padding: 12px 20px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--muted);
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
-    margin-bottom: -2px;
-    white-space: nowrap;
-    transition: all 0.2s;
-    background: none;
-    border-top: none;
-    border-left: none;
-    border-right: none;
-    outline: none;
-  }
-  .tab.active { color: var(--teal); border-bottom-color: var(--teal); }
-  .tab:hover:not(.active) { color: var(--text); }
+    .card {
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+    .card.confirmed { border-left: 3px solid #3fb950; }
+    .card.pending { border-left: 3px solid #d29922; }
+    .card.info { border-left: 3px solid #58a6ff; }
+    .card.eclipse { border-left: 3px solid #f78166; }
+    .card.spa { border-left: 3px solid #bc8cff; }
 
-  /* CONTENT */
-  .content { padding: 24px 32px; }
-  .panel { display: none; }
-  .panel.active { display: block; }
+    .badge {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .badge-green { background: #1a3a1e; color: #3fb950; border: 1px solid #2ea043; }
+    .badge-yellow { background: #2d2208; color: #d29922; border: 1px solid #9e6a03; }
+    .badge-blue { background: #0d2137; color: #58a6ff; border: 1px solid #1f6feb; }
+    .badge-red { background: #3d0b0b; color: #f85149; border: 1px solid #b62324; }
+    .badge-purple { background: #1e0a2e; color: #bc8cff; border: 1px solid #8957e5; }
 
-  /* SECTION HEADER */
-  .section-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 4px;
-  }
-  .section-sub {
-    font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 20px;
-  }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 6px 12px;
+      font-size: 0.88rem;
+    }
+    .detail-grid .label { color: #8b949e; }
+    .detail-grid .value { color: #e6edf3; }
 
-  /* NIGHT CARDS */
-  .nights-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 16px;
-  }
-  .night-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    transition: transform 0.15s, border-color 0.15s;
-  }
-  .night-card:hover { transform: translateY(-2px); border-color: var(--teal); }
-  .night-card.eclipse-card {
-    border-color: rgba(255,69,0,0.5);
-    box-shadow: 0 0 20px rgba(255,69,0,0.12);
-  }
-  .night-card.eclipse-card:hover { border-color: var(--eclipse); }
+    .flight-leg {
+      background: #0d1117;
+      border: 1px solid #21262d;
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .flight-time { font-size: 1.1rem; font-weight: 700; color: #f0f6fc; }
+    .flight-airport { font-size: 0.8rem; color: #8b949e; margin-top: 2px; }
+    .flight-arrow { color: #58a6ff; font-size: 1.2rem; flex-shrink: 0; }
+    .flight-meta { font-size: 0.82rem; color: #8b949e; }
+    .flight-seats { font-size: 0.82rem; color: #bc8cff; margin-top: 3px; }
 
-  .card-header {
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border-bottom: 1px solid var(--border);
-  }
-  .day-badge {
-    background: var(--surface2);
-    border-radius: 8px;
-    padding: 4px 10px;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--muted);
-    letter-spacing: 0.5px;
-    white-space: nowrap;
-  }
-  .card-header h3 {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text);
-    flex: 1;
-  }
-  .urgency-pill {
-    font-size: 10px;
-    font-weight: 700;
-    padding: 3px 9px;
-    border-radius: 12px;
-    letter-spacing: 0.4px;
-    white-space: nowrap;
-  }
-  .urgency-critical { background: rgba(255,69,0,0.2); color: var(--eclipse); border: 1px solid rgba(255,69,0,0.4); }
-  .urgency-high { background: rgba(255,107,107,0.15); color: var(--red); border: 1px solid rgba(255,107,107,0.3); }
-  .urgency-medium { background: rgba(255,179,71,0.12); color: var(--amber); border: 1px solid rgba(255,179,71,0.25); }
-  .urgency-low { background: rgba(105,240,174,0.1); color: var(--green); border: 1px solid rgba(105,240,174,0.2); }
+    /* Itinerary */
+    .day-block {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 10px;
+      align-items: flex-start;
+    }
+    .day-num {
+      min-width: 52px;
+      text-align: center;
+      padding: 6px 4px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .day-content {
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 8px;
+      padding: 12px 16px;
+      flex: 1;
+    }
+    .day-content h4 { font-size: 0.92rem; color: #f0f6fc; font-weight: 600; }
+    .day-content p { font-size: 0.83rem; color: #8b949e; margin-top: 4px; line-height: 1.5; }
 
-  .card-body { padding: 14px 16px; }
-  .campsite-name {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--teal);
-    margin-bottom: 4px;
-  }
-  .campsite-location {
-    font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 10px;
-  }
-  .facilities {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    margin-bottom: 10px;
-  }
-  .facility-tag {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 2px 8px;
-    font-size: 11px;
-    color: var(--muted);
-  }
-  .facility-tag.has { color: var(--green); border-color: rgba(105,240,174,0.2); }
-  .info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 6px 0;
-    border-top: 1px solid var(--border);
-    font-size: 12px;
-  }
-  .info-row .label { color: var(--muted); }
-  .info-row .value { color: var(--text); font-weight: 600; }
-  .info-row .value.cost { color: var(--amber); }
-  .info-row .value.note { color: var(--blue); font-weight: 400; font-style: italic; }
+    .phase-travel .day-num { background: #1c2128; color: #8b949e; }
+    .phase-rvk .day-num { background: #0d2137; color: #58a6ff; }
+    .phase-ring .day-num { background: #1a2f1a; color: #3fb950; }
+    .phase-bnb .day-num { background: #1e0a2e; color: #bc8cff; }
+    .phase-eclipse .day-num { background: #3d0b0b; color: #f85149; }
+    .phase-south .day-num { background: #2d2208; color: #d29922; }
+    .phase-depart .day-num { background: #1c2128; color: #8b949e; }
 
-  .book-btn {
-    display: inline-block;
-    margin-top: 12px;
-    padding: 7px 16px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 700;
-    text-decoration: none;
-    background: rgba(100,255,218,0.1);
-    color: var(--teal);
-    border: 1px solid rgba(100,255,218,0.25);
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-right: 6px;
-  }
-  .book-btn:hover { background: rgba(100,255,218,0.18); border-color: var(--teal); }
-  .book-btn.secondary {
-    background: rgba(93,172,245,0.1);
-    color: var(--blue);
-    border-color: rgba(93,172,245,0.25);
-  }
-  .book-btn.secondary:hover { background: rgba(93,172,245,0.18); }
+    /* Phase legend */
+    .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .legend-dot {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 0.78rem; color: #8b949e;
+    }
+    .legend-dot span {
+      width: 10px; height: 10px; border-radius: 50%; display: inline-block;
+    }
 
-  .eclipse-note {
-    margin-top: 10px;
-    padding: 8px 10px;
-    background: rgba(255,69,0,0.1);
-    border-left: 3px solid var(--eclipse);
-    border-radius: 0 6px 6px 0;
-    font-size: 11px;
-    color: #ffa07a;
-    line-height: 1.5;
-  }
+    /* Eclipse section */
+    .totality-bar {
+      background: linear-gradient(90deg, #1a1a2e, #f78166 45%, #fff 50%, #f78166 55%, #1a1a2e);
+      height: 8px;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+    .eclipse-timeline {
+      display: flex;
+      gap: 0;
+      margin: 16px 0;
+    }
+    .eclipse-phase {
+      flex: 1;
+      text-align: center;
+      padding: 10px 6px;
+      font-size: 0.78rem;
+    }
+    .eclipse-phase .time { font-size: 1rem; font-weight: 700; color: #f0f6fc; }
+    .eclipse-phase .label { color: #8b949e; margin-top: 3px; }
+    .eclipse-phase.totality { background: #3d0b0b; border-radius: 6px; }
 
-  /* ADVANCE BOOKINGS TABLE */
-  .advance-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
-  .advance-table th {
-    background: var(--surface2);
-    color: var(--muted);
-    text-transform: uppercase;
-    font-size: 11px;
-    letter-spacing: 0.7px;
-    padding: 10px 14px;
-    text-align: left;
-    border-bottom: 2px solid var(--border);
-  }
-  .advance-table td {
-    padding: 11px 14px;
-    border-bottom: 1px solid var(--border);
-    vertical-align: middle;
-  }
-  .advance-table tr:last-child td { border-bottom: none; }
-  .advance-table tr:hover td { background: rgba(255,255,255,0.02); }
-  .advance-table .item-name { font-weight: 700; color: var(--text); }
-  .advance-table .item-date { color: var(--muted); }
-  .advance-table .item-cost { color: var(--amber); font-weight: 600; }
-  .advance-table .item-link a {
-    color: var(--teal);
-    text-decoration: none;
-    font-size: 12px;
-    padding: 4px 10px;
-    border: 1px solid rgba(100,255,218,0.25);
-    border-radius: 6px;
-    background: rgba(100,255,218,0.07);
-    transition: all 0.15s;
-    white-space: nowrap;
-  }
-  .advance-table .item-link a:hover { background: rgba(100,255,218,0.15); }
-  .advance-table .urgency-cell { text-align: center; }
-  .priority-row td { background: rgba(255,69,0,0.04); }
+    /* Stays */
+    .stay-card {
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    .stay-night {
+      min-width: 44px;
+      text-align: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 6px 4px;
+      border-radius: 6px;
+      background: #1c2128;
+      color: #8b949e;
+    }
+    .stay-info h4 { font-size: 0.9rem; color: #f0f6fc; font-weight: 600; }
+    .stay-info p { font-size: 0.82rem; color: #8b949e; margin-top: 3px; line-height: 1.5; }
 
-  /* CAMPING CARD BOX */
-  .info-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px 24px;
-    margin-bottom: 20px;
-  }
-  .info-box h3 {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .info-box p { color: var(--muted); font-size: 13px; line-height: 1.7; margin-bottom: 8px; }
-  .info-box ul { color: var(--muted); font-size: 13px; line-height: 1.9; padding-left: 20px; }
-  .info-box ul li strong { color: var(--text); }
-  .info-box .highlight { color: var(--teal); font-weight: 600; }
-  .two-col {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 20px;
-  }
-  @media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+    /* Todo */
+    .todo-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #21262d;
+      font-size: 0.87rem;
+    }
+    .todo-item:last-child { border-bottom: none; }
+    .todo-check { width: 16px; height: 16px; border-radius: 3px; flex-shrink: 0; margin-top: 2px; }
+    .todo-check.done { background: #2ea043; }
+    .todo-check.urgent { background: #b62324; }
+    .todo-check.open { background: #21262d; border: 1px solid #444c56; }
+    .todo-item .todo-text { flex: 1; }
+    .todo-item.done-item .todo-text { text-decoration: line-through; color: #484f58; }
 
-  /* COST SUMMARY */
-  .cost-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-    margin-top: 8px;
-  }
-  .cost-table tr td:first-child { color: var(--muted); padding: 6px 0; }
-  .cost-table tr td:last-child { color: var(--text); font-weight: 600; text-align: right; padding: 6px 0; }
-  .cost-table tr.total td { color: var(--teal); font-size: 15px; border-top: 1px solid var(--border); padding-top: 10px; margin-top: 6px; }
+    /* Camera Gear */
+    .gear-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid #21262d;
+      font-size: 0.87rem;
+    }
+    .gear-item:last-child { border-bottom: none; }
+    .gear-status { font-size: 0.8rem; font-weight: 600; min-width: 55px; }
 
-  /* PHASE LEGEND */
-  .phase-legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  .phase-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: var(--muted);
-  }
-  .phase-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
+    /* Photography */
+    .photo-spot {
+      padding: 10px 0;
+      border-bottom: 1px solid #21262d;
+      font-size: 0.87rem;
+    }
+    .photo-spot:last-child { border-bottom: none; }
+    .photo-spot h4 { color: #f0f6fc; font-size: 0.88rem; }
+    .photo-spot p { color: #8b949e; margin-top: 3px; font-size: 0.82rem; line-height: 1.5; }
 
-  /* HOTEL UPGRADE TOGGLE */
-  .hotel-upgrade {
-    margin-top: 12px;
-    border: 1px solid rgba(181,123,238,0.3);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  .hotel-toggle-btn {
-    width: 100%;
-    background: rgba(181,123,238,0.08);
-    padding: 8px 12px;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--purple);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border: none;
-    outline: none;
-    text-align: left;
-    transition: background 0.15s;
-  }
-  .hotel-toggle-btn:hover { background: rgba(181,123,238,0.15); }
-  .hotel-toggle-btn .arrow { font-style: normal; font-size: 10px; transition: transform 0.2s; display: inline-block; }
-  .hotel-toggle-btn.open .arrow { transform: rotate(180deg); }
-  .hotel-upgrade-body { display: none; padding: 10px 12px; border-top: 1px solid rgba(181,123,238,0.2); }
-  .hotel-upgrade-body.open { display: block; }
-  .hotel-name { font-size: 13px; font-weight: 700; color: var(--purple); margin-bottom: 2px; }
-  .hotel-meta { font-size: 11px; color: var(--muted); line-height: 1.6; margin-bottom: 4px; }
-  .hotel-price { font-size: 12px; font-weight: 600; color: var(--amber); margin-bottom: 6px; }
-  .comfort-badge {
-    font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px;
-    background: rgba(181,123,238,0.15); color: var(--purple);
-    border: 1px solid rgba(181,123,238,0.3); white-space: nowrap;
-  }
+    /* Birds */
+    .bird-section h3 { color: #3fb950; margin: 16px 0 8px; }
 
-  /* Footer */
-  .footer {
-    padding: 20px 32px;
-    border-top: 1px solid var(--border);
-    text-align: center;
-    font-size: 12px;
-    color: var(--muted);
-  }
+    a { color: #58a6ff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
 
-  /* Eclipse banner within card */
-  .eclipse-banner {
-    background: linear-gradient(90deg, rgba(255,69,0,0.15), rgba(255,69,0,0.05));
-    border-top: 2px solid rgba(255,69,0,0.4);
-    padding: 6px 16px;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--eclipse);
-    letter-spacing: 0.3px;
-    text-align: center;
-  }
-</style>
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+    .note {
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-left: 3px solid #d29922;
+      border-radius: 0 8px 8px 0;
+      padding: 12px 16px;
+      font-size: 0.83rem;
+      color: #8b949e;
+      margin-bottom: 14px;
+    }
+    .note strong { color: #d29922; }
+
+    .section-sub {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #484f58;
+      margin: 20px 0 10px;
+      font-weight: 600;
+    }
+
+    /* Map tab */
+    #map { height: 70vh; min-height: 420px; border-radius: 10px; border: 1px solid #21262d; }
+    .map-legend { display: flex; flex-wrap: wrap; gap: 14px; margin: 14px 0 4px; font-size: 0.82rem; color: #8b949e; }
+    .map-legend .ml { display: flex; align-items: center; gap: 6px; }
+    .map-legend .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+    .leaflet-popup-content-wrapper { background: #161b22 !important; color: #e6edf3 !important; border: 1px solid #21262d !important; }
+    .leaflet-popup-tip { background: #161b22 !important; }
+    .pop-t { font-weight: 700; color: #f0f6fc; font-size: 0.9rem; }
+    .pop-cat { display: inline-block; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #58a6ff; background: #0d2137; border: 1px solid #1f6feb; border-radius: 10px; padding: 1px 8px; margin-top: 5px; }
+    .pop-d { font-size: 0.8rem; color: #8b949e; margin-top: 5px; line-height: 1.5; }
+  </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<div class="header">
-  <div class="header-left">
-    <h1>🏕️ Iceland Stay &amp; Booking Dashboard</h1>
-    <p>Chasing the Eclipse · August 3–15, 2026 · Jill &amp; Jeff McCardel</p>
+<header>
+  <h1>🇮🇸 Iceland — August 2026</h1>
+  <p>Jill &amp; Jeff · CozyCampers Highlander I · Aug 2–15, 2026</p>
+  <div class="stats-row">
+    <div class="stat-chip"><span>12</span> nights</div>
+    <div class="stat-chip"><span>~600</span> km</div>
+    <div class="stat-chip"><span>3</span> hotel nights</div>
+    <div class="stat-chip"><span>2</span> eclipse base nights</div>
+    <div class="stat-chip"><span>~2m07s</span> totality</div>
+    <div class="stat-chip">Aug 12 · 5:44 PM</div>
   </div>
-  <div class="header-badges">
-    <span class="badge badge-eclipse">☀️ Eclipse Aug 12</span>
-    <span class="badge badge-teal">🚐 FIAT Doblò Maxi Camper</span>
-    <span class="badge badge-amber">12 Nights · ~950 km</span>
-    <span class="badge badge-red">⚠️ Book Hellissandur NOW</span>
-    <span class="badge" style="background:rgba(181,123,238,0.12);color:var(--purple);border:1px solid rgba(181,123,238,0.3)">🏨 Comfort Upgrades Available</span>
+</header>
+
+<nav id="nav">
+  <button class="active" data-tab="overview" onclick="showTab('overview', this)">Overview</button>
+  <button data-tab="bookings" onclick="showTab('bookings', this)">Bookings</button>
+  <button data-tab="itinerary" onclick="showTab('itinerary', this)">Itinerary</button>
+  <button data-tab="map" onclick="showTab('map', this)">Map</button>
+  <button data-tab="city" onclick="showTab('city', this)">City</button>
+  <button data-tab="ideas" onclick="showTab('ideas', this)">Ideas</button>
+  <button data-tab="eclipse" onclick="showTab('eclipse', this)">Eclipse</button>
+  <button data-tab="photography" onclick="showTab('photography', this)">Photography</button>
+  <button data-tab="gear" onclick="showTab('gear', this)">Camera Gear</button>
+  <button data-tab="birds" onclick="showTab('birds', this)">Birdwatching</button>
+  <button data-tab="todos" onclick="showTab('todos', this)">To-Do</button>
+</nav>
+<div id="today-banner" style="display:none;background:linear-gradient(135deg,#0d2137,#1a2f1a);border-bottom:1px solid #21262d;padding:14px 32px;">
+  <div class="today-date" style="font-size:0.74rem;text-transform:uppercase;letter-spacing:0.8px;color:#58a6ff;font-weight:600;"></div>
+  <div class="today-title" style="font-size:1.05rem;color:#f0f6fc;font-weight:700;margin-top:3px;"></div>
+  <div class="today-detail" style="font-size:0.86rem;color:#c9d1d9;margin-top:3px;line-height:1.5;"></div>
+</div>
+
+<!-- ===================== OVERVIEW ===================== -->
+<div id="tab-overview" class="tab-content active">
+  <h2>Trip Overview</h2>
+
+  <div class="two-col">
+    <div class="card confirmed">
+      <h3>✅ Campervan — Booked</h3>
+      <div class="detail-grid" style="margin-top:8px;">
+        <span class="label">Vehicle</span><span class="value">CozyCampers Highlander I</span>
+        <span class="label">Code</span><span class="value" style="color:#3fb950;font-weight:700;">GYP9GK</span>
+        <span class="label">Pickup</span><span class="value">Aug 4 · 12:00 · Kópavogur</span>
+        <span class="label">Dropoff</span><span class="value">Aug 13 · 12:00 · Kópavogur</span>
+        <span class="label">Drive</span><span class="value">AWD · Automatic · Diesel</span>
+        <span class="label">Sleeps</span><span class="value">2 beds · 2 seats</span>
+        <span class="label">Total Paid</span><span class="value" style="color:#3fb950;">€6,181 (card ••0147)</span>
+      </div>
+    </div>
+
+    <div class="card confirmed">
+      <h3>✅ Flights — Booked</h3>
+      <div class="detail-grid" style="margin-top:8px;">
+        <span class="label">Alaska conf.</span><span class="value" style="color:#3fb950;font-weight:700;">CZTRUB</span>
+        <span class="label">Icelandair</span><span class="value" style="color:#3fb950;font-weight:700;">BFD2GQ</span>
+        <span class="label">Outbound</span><span class="value">Aug 2 PDX → Aug 3 KEF (via SEA)</span>
+        <span class="label">Return</span><span class="value">Aug 15 KEF → Aug 15 PDX (via SEA)</span>
+        <span class="label">Jill AK#</span><span class="value">152614394</span>
+      </div>
+      <p style="font-size:0.78rem;color:#d29922;margin-top:10px;">⚠️ Icelandair seats not yet selected — go to icelandair.com with BFD2GQ</p>
+    </div>
+  </div>
+
+  <div class="card info">
+    <h3>Confirmed Anchors</h3>
+    <div class="legend" style="flex-direction:column;gap:10px;margin-top:8px;">
+      <div style="display:flex;gap:10px;align-items:center;font-size:0.87rem;">
+        <span style="width:12px;height:12px;border-radius:50%;background:#8b949e;flex-shrink:0;"></span>
+        <strong style="color:#8b949e;min-width:110px;">Aug 2–3</strong>
+        <span style="color:#c9d1d9;">✈️ Fly PDX → KEF.</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;font-size:0.87rem;">
+        <span style="width:12px;height:12px;border-radius:50%;background:#3fb950;flex-shrink:0;"></span>
+        <strong style="color:#3fb950;min-width:110px;">Aug 3</strong>
+        <span style="color:#c9d1d9;">🏨 Vintage Apartment Hotel — booking #86746010</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;font-size:0.87rem;">
+        <span style="width:12px;height:12px;border-radius:50%;background:#3fb950;flex-shrink:0;"></span>
+        <strong style="color:#3fb950;min-width:110px;">Aug 4</strong>
+        <span style="color:#c9d1d9;">🚐 Camper pickup noon — CozyCampers, Kópavogur (GYP9GK)</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;font-size:0.87rem;">
+        <span style="width:12px;height:12px;border-radius:50%;background:#3fb950;flex-shrink:0;"></span>
+        <strong style="color:#3fb950;min-width:110px;">Aug 11–13</strong>
+        <span style="color:#c9d1d9;">🔭 Eclipse campsite — Eldborg at Snorrastaðir (#36-532-18003-341978)</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;font-size:0.87rem;">
+        <span style="width:12px;height:12px;border-radius:50%;background:#3fb950;flex-shrink:0;"></span>
+        <strong style="color:#3fb950;min-width:110px;">Aug 13 · noon</strong>
+        <span style="color:#c9d1d9;">🚐 Camper dropoff — CozyCampers, Kópavogur</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;font-size:0.87rem;">
+        <span style="width:12px;height:12px;border-radius:50%;background:#3fb950;flex-shrink:0;"></span>
+        <strong style="color:#3fb950;min-width:110px;">Aug 13–15</strong>
+        <span style="color:#c9d1d9;">🏨 Reykjavik Lights by KEA Hotels — confirmation 0348Z4PQO</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;font-size:0.87rem;">
+        <span style="width:12px;height:12px;border-radius:50%;background:#8b949e;flex-shrink:0;"></span>
+        <strong style="color:#8b949e;min-width:110px;">Aug 15</strong>
+        <span style="color:#c9d1d9;">✈️ Fly KEF → PDX 10:40 AM · Hotel checkout by 11:00</span>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- ALERT BANNER -->
-<div class="alert-banner">
-  <span class="icon">🔴</span>
-  <span><strong>CRITICAL:</strong> Hellissandur Campsite for Aug 11–12 (eclipse night) will fill months in advance. Reserve immediately at <strong>tjalda.is</strong> or contact Hellissandur directly. This is your highest booking priority.</span>
-</div>
+<!-- ===================== BOOKINGS ===================== -->
+<div id="tab-bookings" class="tab-content">
+  <h2>Confirmed Bookings</h2>
 
-<!-- STATS ROW -->
-<div class="stats-row">
-  <div class="stat-card"><span class="val">12</span><span class="lbl">Nights</span></div>
-  <div class="stat-card"><span class="val">~$25</span><span class="lbl">Avg/Person/Night</span></div>
-  <div class="stat-card"><span class="val">~$600</span><span class="lbl">Est. Camp Total</span></div>
-  <div class="stat-card"><span class="val">2</span><span class="lbl">Ferry Crossings</span></div>
-  <div class="stat-card"><span class="val">2:07</span><span class="lbl">Eclipse Totality</span></div>
-  <div class="stat-card"><span class="val">tjalda.is</span><span class="lbl">Official Booking</span></div>
-  <div class="stat-card"><span class="val">7+</span><span class="lbl">Advance Bookings</span></div>
-</div>
-
-<!-- TABS -->
-<div class="tabs">
-  <button class="tab active" onclick="showPanel('nights')">🗓️ Night-by-Night</button>
-  <button class="tab" onclick="showPanel('advance')">📋 Advance Bookings</button>
-  <button class="tab" onclick="showPanel('tips')">💡 Tips &amp; Savings</button>
-  <button class="tab" onclick="showPanel('costs')">💰 Cost Estimate</button>
-</div>
-
-<!-- PANEL: NIGHTS -->
-<div class="content">
-<div class="panel active" id="panel-nights">
-
-  <div class="phase-legend">
-    <div class="phase-item"><div class="phase-dot" style="background:#64ffda"></div> Reykjavik &amp; Golden Circle</div>
-    <div class="phase-item"><div class="phase-dot" style="background:#b57bee"></div> Snæfellsnes Peninsula</div>
-    <div class="phase-item"><div class="phase-dot" style="background:#5dacf5"></div> Westfjords</div>
-    <div class="phase-item"><div class="phase-dot" style="background:#ff4500"></div> Eclipse Night ⭐</div>
-    <div class="phase-item"><div class="phase-dot" style="background:#ffb347"></div> Return South</div>
+  <div class="card confirmed">
+    <h3>CozyCampers Highlander I <span class="badge badge-green">PAID IN FULL</span></h3>
+    <div class="detail-grid" style="margin-top:12px;">
+      <span class="label">Booking code</span><span class="value" style="color:#3fb950;font-weight:700;font-size:1rem;">GYP9GK</span>
+      <span class="label">Pickup</span><span class="value">Tue Aug 4, 12:00 — Kársnesbraut 106, 200 Kópavogur</span>
+      <span class="label">Dropoff</span><span class="value">Thu Aug 13, 12:00 — same location</span>
+      <span class="label">Vehicle</span><span class="value">Budget – Highlander I · AWD · Automatic · Diesel</span>
+      <span class="label">Seats / beds</span><span class="value">2 seats · 2 beds</span>
+      <span class="label">Luggage</span><span class="value">1× large bag · 2× small bags</span>
+      <span class="label">Extras</span><span class="value">Road Tax (€156) · Premium Insurance (€468)</span>
+      <span class="label">Total paid</span><span class="value" style="color:#3fb950;font-weight:700;">€6,181.00 · card ••0147 · Apr 3, 2026</span>
+      <span class="label">Original price</span><span class="value">€11,966 — discount –€5,785</span>
+      <span class="label">Contact</span><span class="value">info@cozycampers.is · +354 519 5131 · Hours 09:00–18:00</span>
+      <span class="label">Check-in</span><span class="value">Online check-in opens Jul 28 (168 hrs before Aug 4 pickup)</span>
+    </div>
   </div>
 
-  <div class="nights-grid">
+  <h2 style="margin-top:24px;">Flights</h2>
+  <div class="card confirmed">
+    <h3>Outbound: PDX → KEF <span class="badge badge-green">BOOKED</span></h3>
+    <p style="font-size:0.82rem;color:#8b949e;margin-bottom:12px;">Alaska CZTRUB · Icelandair BFD2GQ · Sun Aug 2 → Mon Aug 3</p>
 
-    <!-- NIGHT 1-2: Reykjavik -->
-    <div class="night-card">
-      <div class="card-header" style="border-left: 4px solid #64ffda;">
-        <div class="day-badge">AUG 3–5 · NIGHTS 1–2</div>
-        <h3>Reykjavik</h3>
-        <span class="urgency-pill urgency-high">BOOK EARLY</span>
+    <div class="flight-leg">
+      <div>
+        <div class="flight-time">3:30 PM</div>
+        <div class="flight-airport">PDX · Portland</div>
       </div>
-      <div class="card-body">
-        <div class="campsite-name">Reykjavik Campsite (Laugardalur)</div>
-        <div class="campsite-location">📍 Sundlaugavegur 32, Reykjavik · 10 min from city center</div>
-        <div class="facilities">
-          <span class="facility-tag has">🚿 Hot Showers</span>
-          <span class="facility-tag has">🚽 Flush Toilets</span>
-          <span class="facility-tag has">🍳 Kitchen</span>
-          <span class="facility-tag has">♻️ Laundry</span>
-          <span class="facility-tag has">🔌 EV Charging</span>
-          <span class="facility-tag has">🛒 Walking to shops</span>
-        </div>
-        <div class="info-row"><span class="label">Cost per night</span><span class="value cost">~$55–70 (2 people)</span></div>
-        <div class="info-row"><span class="label">Capacity</span><span class="value">Large — but fills Aug peak</span></div>
-        <div class="info-row"><span class="label">Booking</span><span class="value">tjalda.is or direct</span></div>
-        <div class="info-row"><span class="label">Highlights</span><span class="value note">Next to Laugardalslaug geothermal pool &amp; botanical garden</span></div>
-        <a href="https://www.tjalda.is" target="_blank" class="book-btn">📅 Book on Tjalda</a>
-        <a href="https://reykjavikcampsite.is" target="_blank" class="book-btn secondary">🌐 Direct</a>
-        <div class="hotel-upgrade">
-          <button class="hotel-toggle-btn" onclick="toggleHotel(this)">🏨 Comfort Upgrade Option <span class="arrow">▼</span></button>
-          <div class="hotel-upgrade-body">
-            <div class="hotel-name">Centerhotel Arnarhvoll ⭐⭐⭐⭐</div>
-            <div class="hotel-meta">📍 City center · Stunning bay views · Walk everywhere</div>
-            <div class="hotel-price">~$200–280/night</div>
-            <div class="hotel-meta">💡 <strong>Worth it?</strong> After a transatlantic red-eye (land 5:31 AM), a real bed on Night 1 can make the difference. Skip if you want to dive straight into campervan life.</div>
-            <div class="hotel-name" style="margin-top:8px">Budget pick: Cabin Hotel Reykjavik ⭐⭐⭐</div>
-            <div class="hotel-meta">📍 Near Laugardalur Pool · Comfortable &amp; affordable</div>
-            <div class="hotel-price">~$120–160/night</div>
-            <a href="https://www.centerhotels.com/en/hotel-arnarhvoll-reykjavik" target="_blank" class="book-btn" style="margin-top:8px;background:rgba(181,123,238,0.1);color:var(--purple);border-color:rgba(181,123,238,0.3)">🏨 Arnarhvoll</a>
-            <a href="https://www.booking.com/hotel/is/cabin-reykjavik.html" target="_blank" class="book-btn secondary">🏨 Cabin Hotel</a>
-          </div>
-        </div>
+      <div class="flight-arrow">→</div>
+      <div>
+        <div class="flight-time">4:30 PM</div>
+        <div class="flight-airport">SEA · Seattle</div>
+      </div>
+      <div>
+        <div class="flight-meta">AS 3408 (SkyWest) · Aug 2</div>
+        <div class="flight-seats">Jill 15C · Jeff 15D</div>
       </div>
     </div>
 
-    <!-- NIGHT 3: Þingvellir/Árnes -->
-    <div class="night-card">
-      <div class="card-header" style="border-left: 4px solid #64ffda;">
-        <div class="day-badge">AUG 5–6 · NIGHT 3</div>
-        <h3>Golden Circle</h3>
-        <span class="urgency-pill urgency-medium">BOOK AHEAD</span>
+    <div style="font-size:0.8rem;color:#484f58;padding:4px 16px;">↓ 2h 30m layover in Seattle</div>
+
+    <div class="flight-leg">
+      <div>
+        <div class="flight-time">7:00 PM</div>
+        <div class="flight-airport">SEA · Seattle</div>
       </div>
-      <div class="card-body">
-        <div class="campsite-name">Þingvellir National Park Campsite</div>
-        <div class="campsite-location">📍 Þingvellir, Golden Circle · UNESCO World Heritage Site</div>
-        <div class="facilities">
-          <span class="facility-tag has">🚿 Showers</span>
-          <span class="facility-tag has">🚽 Toilets</span>
-          <span class="facility-tag has">🍳 Basic kitchen</span>
-          <span class="facility-tag">No laundry</span>
-        </div>
-        <div class="info-row"><span class="label">Cost per night</span><span class="value cost">~$45–60 (2 people)</span></div>
-        <div class="info-row"><span class="label">Alt option</span><span class="value">Árnes Campsite near Selfoss (more facilities)</span></div>
-        <div class="info-row"><span class="label">Booking</span><span class="value">tjalda.is (Þingvellir required)</span></div>
-        <div class="info-row"><span class="label">Why here</span><span class="value note">Mid-rift tectonic plates, midnight sun, Geysir &amp; Gullfoss nearby</span></div>
-        <a href="https://www.tjalda.is" target="_blank" class="book-btn">📅 Book on Tjalda</a>
-        <a href="https://www.thingvellir.is/en/" target="_blank" class="book-btn secondary">🌐 Park Site</a>
-        <div class="hotel-upgrade">
-          <button class="hotel-toggle-btn" onclick="toggleHotel(this)">🏨 Comfort Upgrade Option <span class="arrow">▼</span></button>
-          <div class="hotel-upgrade-body">
-            <div class="hotel-name">Hótel Geysir ⭐⭐⭐</div>
-            <div class="hotel-meta">📍 Geysir, Golden Circle · Steps from Strokkur geyser · Breakfast included</div>
-            <div class="hotel-price">~$180–240/night (incl. breakfast)</div>
-            <div class="hotel-meta">💡 <strong>Worth it?</strong> Lets you see Geysir at dawn with no crowds before tour buses arrive — a genuinely special experience. Hot tub on site.</div>
-            <a href="https://www.hotelgeysir.com" target="_blank" class="book-btn" style="margin-top:8px;background:rgba(181,123,238,0.1);color:var(--purple);border-color:rgba(181,123,238,0.3)">🏨 Hótel Geysir</a>
-          </div>
-        </div>
+      <div class="flight-arrow">→</div>
+      <div>
+        <div class="flight-time">9:25 AM+1</div>
+        <div class="flight-airport">KEF · Keflavik</div>
+      </div>
+      <div>
+        <div class="flight-meta">FI 682 / AS 5552 (Icelandair) · Aug 2–3</div>
+        <div class="flight-seats" style="color:#d29922;">⚠️ Seats NOT selected — Coach L — go to icelandair.com / BFD2GQ</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card confirmed">
+    <h3>Return: KEF → PDX <span class="badge badge-green">BOOKED</span></h3>
+    <p style="font-size:0.82rem;color:#8b949e;margin-bottom:12px;">Sat Aug 15 · Camper already dropped Aug 13 · Depart from Reykjavik Lights hotel</p>
+
+    <div class="flight-leg">
+      <div>
+        <div class="flight-time">10:40 AM</div>
+        <div class="flight-airport">KEF · Keflavik</div>
+      </div>
+      <div class="flight-arrow">→</div>
+      <div>
+        <div class="flight-time">11:45 AM</div>
+        <div class="flight-airport">SEA · Seattle</div>
+      </div>
+      <div>
+        <div class="flight-meta">FI 685 / AS 5557 (Icelandair) · Aug 15</div>
+        <div class="flight-seats" style="color:#d29922;">⚠️ Seats NOT selected — Coach Y</div>
       </div>
     </div>
 
-    <!-- NIGHT 4: Grundarfjörður -->
-    <div class="night-card">
-      <div class="card-header" style="border-left: 4px solid #b57bee;">
-        <div class="day-badge">AUG 6–7 · NIGHT 4</div>
-        <h3>Snæfellsnes — Kirkjufell</h3>
-        <span class="urgency-pill urgency-medium">BOOK AHEAD</span>
+    <div style="font-size:0.8rem;color:#484f58;padding:4px 16px;">↓ 2h layover in Seattle</div>
+
+    <div class="flight-leg">
+      <div>
+        <div class="flight-time">1:45 PM</div>
+        <div class="flight-airport">SEA · Seattle</div>
       </div>
-      <div class="card-body">
-        <div class="campsite-name">Grundarfjörður Campsite</div>
-        <div class="campsite-location">📍 Grundarfjörður village, Snæfellsnes · Next to Kirkjufell mountain</div>
-        <div class="facilities">
-          <span class="facility-tag has">🚿 Hot Showers</span>
-          <span class="facility-tag has">🚽 Flush Toilets</span>
-          <span class="facility-tag has">🍳 Kitchen</span>
-          <span class="facility-tag has">♻️ Laundry</span>
-          <span class="facility-tag has">🛒 Small shops nearby</span>
-        </div>
-        <div class="info-row"><span class="label">Cost per night</span><span class="value cost">~$40–55 (2 people)</span></div>
-        <div class="info-row"><span class="label">Booking</span><span class="value">tjalda.is or via campsite</span></div>
-        <div class="info-row"><span class="label">Highlights</span><span class="value note">Kirkjufell "Game of Thrones" mountain, whale watching, Bæjarfoss waterfall</span></div>
-        <a href="https://www.tjalda.is" target="_blank" class="book-btn">📅 Book on Tjalda</a>
-        <div class="hotel-upgrade">
-          <button class="hotel-toggle-btn" onclick="toggleHotel(this)">🏨 Comfort Upgrade Option <span class="arrow">▼</span></button>
-          <div class="hotel-upgrade-body">
-            <div class="hotel-name">Kirkjufell Guesthouse ⭐⭐⭐</div>
-            <div class="hotel-meta">📍 Grundarfjörður · Views of Kirkjufell from room · Home-cooked breakfast option</div>
-            <div class="hotel-price">~$130–180/night</div>
-            <div class="hotel-meta">💡 <strong>Worth it?</strong> Grundarfjörður is a tiny fishing village — even the guesthouses feel like a local's living room. Great people-watching spot after driving all day.</div>
-            <a href="https://www.booking.com/searchresults.html?ss=Grundarfj%C3%B6r%C3%B0ur" target="_blank" class="book-btn" style="margin-top:8px;background:rgba(181,123,238,0.1);color:var(--purple);border-color:rgba(181,123,238,0.3)">🏨 Search Guesthouses</a>
-          </div>
-        </div>
+      <div class="flight-arrow">→</div>
+      <div>
+        <div class="flight-time">2:48 PM</div>
+        <div class="flight-airport">PDX · Portland</div>
+      </div>
+      <div>
+        <div class="flight-meta">AS 3204 (SkyWest) · Aug 15</div>
+        <div class="flight-seats">Jill 12D · Jeff 12C</div>
       </div>
     </div>
+  </div>
 
-    <!-- NIGHT 5: Hellissandur FIRST STAY -->
-    <div class="night-card">
-      <div class="card-header" style="border-left: 4px solid #b57bee;">
-        <div class="day-badge">AUG 7–8 · NIGHT 5</div>
-        <h3>Snæfellsjökull Tip</h3>
-        <span class="urgency-pill urgency-high">BOOK EARLY</span>
-      </div>
-      <div class="card-body">
-        <div class="campsite-name">Hellissandur Campsite</div>
-        <div class="campsite-location">📍 Hellissandur, NW Snæfellsnes · 5 min from Öndverðarnes lighthouse</div>
-        <div class="facilities">
-          <span class="facility-tag has">🚿 Showers</span>
-          <span class="facility-tag has">🚽 Toilets</span>
-          <span class="facility-tag has">🍳 Basic kitchen</span>
-          <span class="facility-tag">Small site</span>
-        </div>
-        <div class="info-row"><span class="label">Cost per night</span><span class="value cost">~$35–45 (2 people)</span></div>
-        <div class="info-row"><span class="label">Note</span><span class="value">Also scout ferry departure logistics for next day</span></div>
-        <div class="info-row"><span class="label">Highlights</span><span class="value note">Snæfellsjökull glacier hike, lava tube caves, dramatic coastline</span></div>
-        <a href="https://www.tjalda.is" target="_blank" class="book-btn">📅 Book on Tjalda</a>
-      </div>
+  <div class="section-sub">Lodging</div>
+  <div class="card confirmed">
+    <h3>Vintage Apartment Hotel — Arrival Night <span class="badge badge-green">CONFIRMED</span></h3>
+    <div class="detail-grid" style="margin-top:12px;">
+      <span class="label">Booking #</span><span class="value" style="color:#3fb950;font-weight:700;">86746010</span>
+      <span class="label">Check-in</span><span class="value">Mon Aug 3 · self-service (code sent 1 day prior)</span>
+      <span class="label">Check-out</span><span class="value">Tue Aug 4</span>
+      <span class="label">Room</span><span class="value">Deluxe Studio · 2 adults</span>
+      <span class="label">Contact</span><span class="value">info@vintagehotel.is</span>
     </div>
+    <p style="font-size:0.78rem;color:#d29922;margin-top:10px;">⚠️ Self-service check-in — watch for email with apartment number and entry code 1 day before Aug 3. Breakfast must be booked 2 days before arrival by 16:00.</p>
+  </div>
 
-    <!-- NIGHT 6: Stykkishólmur -->
-    <div class="night-card">
-      <div class="card-header" style="border-left: 4px solid #b57bee;">
-        <div class="day-badge">AUG 8–9 · NIGHT 6</div>
-        <h3>Stykkishólmur (Pre-Ferry)</h3>
-        <span class="urgency-pill urgency-medium">BOOK AHEAD</span>
-      </div>
-      <div class="card-body">
-        <div class="campsite-name">Stykkishólmur Campsite (Höfðagarður)</div>
-        <div class="campsite-location">📍 Stykkishólmur town · Near Baldur Ferry terminal</div>
-        <div class="facilities">
-          <span class="facility-tag has">🚿 Hot Showers</span>
-          <span class="facility-tag has">🚽 Flush Toilets</span>
-          <span class="facility-tag has">🍳 Kitchen</span>
-          <span class="facility-tag has">🛒 Town center</span>
-        </div>
-        <div class="info-row"><span class="label">Cost per night</span><span class="value cost">~$40–55 (2 people)</span></div>
-        <div class="info-row"><span class="label">Ferry next AM</span><span class="value">Baldur Ferry departs ~9:00 AM — check schedule</span></div>
-        <div class="info-row"><span class="label">Booking</span><span class="value">tjalda.is</span></div>
-        <div class="info-row"><span class="label">Highlights</span><span class="value note">Norwegian House museum, harbor, Súgandafjörður views</span></div>
-        <a href="https://www.tjalda.is" target="_blank" class="book-btn">📅 Book on Tjalda</a>
-        <a href="https://www.seatours.is/baldur-ferry/" target="_blank" class="book-btn secondary">⛴️ Book Ferry</a>
-        <div class="hotel-upgrade">
-          <button class="hotel-toggle-btn" onclick="toggleHotel(this)">🏨 Comfort Upgrade Option <span class="arrow">▼</span></button>
-          <div class="hotel-upgrade-body">
-            <div class="hotel-name">Hotel Stykkishólmur ⭐⭐⭐</div>
-            <div class="hotel-meta">📍 Town center · Stunning fjord &amp; island views · In-house restaurant</div>
-            <div class="hotel-price">~$150–200/night</div>
-            <div class="hotel-meta">💡 <strong>Worth it?</strong> Last real hotel before several nights of remote Westfjords camping. The restaurant is excellent — try the local fish. Early ferry the next morning is easier from here than the campsite.</div>
-            <a href="https://www.hotelstykkisholmur.is" target="_blank" class="book-btn" style="margin-top:8px;background:rgba(181,123,238,0.1);color:var(--purple);border-color:rgba(181,123,238,0.3)">🏨 Hotel Stykkishólmur</a>
-          </div>
-        </div>
-      </div>
+  <div class="card confirmed">
+    <h3>Eldborg Campsite at Snorrastaðir — Eclipse Base <span class="badge badge-green">CONFIRMED</span></h3>
+    <div class="detail-grid" style="margin-top:12px;">
+      <span class="label">Reservation #</span><span class="value" style="color:#3fb950;font-weight:700;">36-532-18003-341978</span>
+      <span class="label">Nights</span><span class="value">Aug 11–13 · 2 nights · 2 adults</span>
+      <span class="label">Check-in</span><span class="value">After 3 PM · Checkout before noon</span>
+      <span class="label">Total paid</span><span class="value" style="color:#3fb950;font-weight:700;">40,800 ISK</span>
+      <span class="label">Address</span><span class="value">Snorrastaðir, 311 Borgarbyggð</span>
     </div>
+    <p style="font-size:0.78rem;color:#d29922;margin-top:10px;">⚠️ Non-refundable · Bring printed or digital reservation to show campsite staff.</p>
+  </div>
 
-    <!-- NIGHT 7: Patreksfjörður -->
-    <div class="night-card">
-      <div class="card-header" style="border-left: 4px solid #5dacf5;">
-        <div class="day-badge">AUG 9–10 · NIGHT 7</div>
-        <h3>Westfjords Entry</h3>
-        <span class="urgency-pill urgency-low">FLEXIBLE</span>
-      </div>
-      <div class="card-body">
-        <div class="campsite-name">Patreksfjörður Campsite</div>
-        <div class="campsite-location">📍 Patreksfjörður, Westfjords · Near Látrabjarg bird cliffs</div>
-        <div class="facilities">
-          <span class="facility-tag has">🚿 Showers</span>
-          <span class="facility-tag has">🚽 Toilets</span>
-          <span class="facility-tag has">🍳 Kitchen</span>
-          <span class="facility-tag">Remote — stock up on supplies</span>
-        </div>
-        <div class="info-row"><span class="label">Cost per night</span><span class="value cost">~$35–45 (2 people)</span></div>
-        <div class="info-row"><span class="label">Note</span><span class="value">Alt: Flókalundur Campsite near Brjánslækur ferry landing</span></div>
-        <div class="info-row"><span class="label">Highlights</span><span class="value note">Látrabjarg (westernmost point of Europe), puffins, Rauðasandur red sand beach</span></div>
-        <a href="https://www.tjalda.is" target="_blank" class="book-btn">📅 Book on Tjalda</a>
-      </div>
+  <div class="card confirmed">
+    <h3>Reykjavik Lights by KEA Hotels <span class="badge badge-green">CONFIRMED</span></h3>
+    <div class="detail-grid" style="margin-top:12px;">
+      <span class="label">Confirmation</span><span class="value" style="color:#3fb950;font-weight:700;">0348Z4PQO</span>
+      <span class="label">Check-in</span><span class="value">Thu Aug 13 · 15:00</span>
+      <span class="label">Check-out</span><span class="value">Sat Aug 15 · 11:00</span>
+      <span class="label">Room</span><span class="value">Standard Room · 2 adults · Queen 160cm</span>
+      <span class="label">Total paid</span><span class="value" style="color:#3fb950;font-weight:700;">€860.55 (incl. lodging tax)</span>
+      <span class="label">Address</span><span class="value">Sudurlandsbraut 12, 108 Reykjavik</span>
+      <span class="label">Phone</span><span class="value">+354 513 9000</span>
+      <span class="label">Email</span><span class="value">reykjaviklights@keahotels.is</span>
     </div>
+    <p style="font-size:0.78rem;color:#d29922;margin-top:10px;">⚠️ Non-refundable · Bring the credit card used to book · Cardholder name must match ID at check-in</p>
+  </div>
 
-    <!-- NIGHTS 8-9: Ísafjörður -->
-    <div class="night-card">
-      <div class="card-header" style="border-left: 4px solid #5dacf5;">
-        <div class="day-badge">AUG 10–12 · NIGHTS 8–9</div>
-        <h3>Ísafjörður</h3>
-        <span class="urgency-pill urgency-high">BOOK EARLY</span>
-      </div>
-      <div class="card-body">
-        <div class="campsite-name">Ísafjörður Campsite (Heimatorg)</div>
-        <div class="campsite-location">📍 Ísafjörður, Capital of Westfjords · Full services</div>
-        <div class="facilities">
-          <span class="facility-tag has">🚿 Hot Showers</span>
-          <span class="facility-tag has">🚽 Flush Toilets</span>
-          <span class="facility-tag has">🍳 Full Kitchen</span>
-          <span class="facility-tag has">♻️ Laundry</span>
-          <span class="facility-tag has">🛒 Grocery stores</span>
-          <span class="facility-tag has">🍽️ Restaurants</span>
-        </div>
-        <div class="info-row"><span class="label">Cost per night</span><span class="value cost">~$45–60 (2 people)</span></div>
-        <div class="info-row"><span class="label">Restaurant</span><span class="value">Tjöruhúsið — must reserve in advance!</span></div>
-        <div class="info-row"><span class="label">Booking</span><span class="value">tjalda.is</span></div>
-        <div class="info-row"><span class="label">Highlights</span><span class="value note">Historic wooden houses, Hornstrandir ferry base, world-class fish stew at Tjöruhúsið</span></div>
-        <a href="https://www.tjalda.is" target="_blank" class="book-btn">📅 Book on Tjalda</a>
-        <a href="https://www.tjoruhusid.is/" target="_blank" class="book-btn secondary">🍽️ Tjöruhúsið</a>
-        <div class="hotel-upgrade">
-          <button class="hotel-toggle-btn" onclick="toggleHotel(this)">🏨 Comfort Upgrade Option <span class="arrow">▼</span></button>
-          <div class="hotel-upgrade-body">
-            <div class="hotel-name">Hotel Ísafjörður ⭐⭐⭐</div>
-            <div class="hotel-meta">📍 Ísafjörður town center · Newly renovated · Bar &amp; restaurant on-site</div>
-            <div class="hotel-price">~$160–220/night</div>
-            <div class="hotel-meta">💡 <strong>Worth it?</strong> Ísafjörður is the most remote capital-of-a-region in all of Iceland. After winding fjord roads and remote camping, a proper bed here is a real treat. Also means easier access to Tjöruhúsið for dinner — they fill up fast!</div>
-            <a href="https://www.hotelisafjordur.is" target="_blank" class="book-btn" style="margin-top:8px;background:rgba(181,123,238,0.1);color:var(--purple);border-color:rgba(181,123,238,0.3)">🏨 Hotel Ísafjörður</a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- NIGHTS 10-11: HELLISSANDUR ECLIPSE — CRITICAL -->
-    <div class="night-card eclipse-card">
-      <div class="eclipse-banner">☀️ TOTAL SOLAR ECLIPSE · AUGUST 12, 2026 · 2:07 MIN TOTALITY</div>
-      <div class="card-header" style="border-left: 4px solid #ff4500;">
-        <div class="day-badge">AUG 12–13 · NIGHTS 10–11</div>
-        <h3>Eclipse Night — Hellissandur</h3>
-        <span class="urgency-pill urgency-critical">🔴 BOOK NOW</span>
-      </div>
-      <div class="card-body">
-        <div class="campsite-name">Hellissandur Campsite</div>
-        <div class="campsite-location">📍 Hellissandur, NW Snæfellsnes · Inside totality zone · Glacier backdrop</div>
-        <div class="facilities">
-          <span class="facility-tag has">🚿 Showers</span>
-          <span class="facility-tag has">🚽 Toilets</span>
-          <span class="facility-tag has">🍳 Basic kitchen</span>
-          <span class="facility-tag">Small &amp; will fill FAST</span>
-        </div>
-        <div class="info-row"><span class="label">Eclipse time</span><span class="value" style="color:var(--eclipse)">~3:15 PM local · Totality 2 min 7 sec</span></div>
-        <div class="info-row"><span class="label">Viewing spot</span><span class="value">Öndverðarnes Lighthouse — 5 min drive</span></div>
-        <div class="info-row"><span class="label">Cost per night</span><span class="value cost">Likely surge pricing — est. $50–80/night</span></div>
-        <div class="info-row"><span class="label">Backup option</span><span class="value">Rif village camping (1 km west, also in totality)</span></div>
-        <div class="eclipse-note">
-          ⚠️ <strong>Eclipse tourism will flood Snæfellsnes.</strong> Every campsite within the totality zone will be fully booked. Hellissandur is the closest town to the optimal viewing point. Contact the campsite directly now and also try tjalda.is. If fully booked, consider Rif, Ólafsvík, or Grundarfjörður (partial totality at edge of zone). You could also consider arriving Aug 11 evening and sleeping in the van at Öndverðarnes parking area as a backup.
-        </div>
-        <a href="https://www.tjalda.is" target="_blank" class="book-btn">📅 Book on Tjalda</a>
-        <a href="https://www.visitsnafellsnes.is/" target="_blank" class="book-btn secondary">🌐 Snæfellsnes Tourism</a>
-      </div>
-    </div>
-
-    <!-- NIGHT 12: Húsafell -->
-    <div class="night-card">
-      <div class="card-header" style="border-left: 4px solid #ffb347;">
-        <div class="day-badge">AUG 13–14 · NIGHT 12</div>
-        <h3>Húsafell (Inland)</h3>
-        <span class="urgency-pill urgency-medium">BOOK AHEAD</span>
-      </div>
-      <div class="card-body">
-        <div class="campsite-name">Húsafell Campsite</div>
-        <div class="campsite-location">📍 Húsafell, Borgarfjörður · Near Hraunfossar lava waterfalls</div>
-        <div class="facilities">
-          <span class="facility-tag has">🚿 Hot Showers</span>
-          <span class="facility-tag has">🚽 Flush Toilets</span>
-          <span class="facility-tag has">🍳 Kitchen</span>
-          <span class="facility-tag has">♨️ Geothermal pool</span>
-          <span class="facility-tag has">🧖 Spa access</span>
-        </div>
-        <div class="info-row"><span class="label">Cost per night</span><span class="value cost">~$50–65 (2 people)</span></div>
-        <div class="info-row"><span class="label">Bonus</span><span class="value">Húsafell Stone (ancient strength test), INTO the Glacier tour nearby</span></div>
-        <div class="info-row"><span class="label">Highlights</span><span class="value note">Hraunfossar &amp; Barnafosr falls, Langjökull ice cave, Víðgelmir lava tube</span></div>
-        <a href="https://www.tjalda.is" target="_blank" class="book-btn">📅 Book on Tjalda</a>
-        <a href="https://www.husafell.is/" target="_blank" class="book-btn secondary">🌐 Húsafell Resort</a>
-        <div class="hotel-upgrade">
-          <button class="hotel-toggle-btn" onclick="toggleHotel(this)">🏨 Comfort Upgrade Option — Post-Eclipse Splurge? <span class="arrow">▼</span></button>
-          <div class="hotel-upgrade-body">
-            <div class="hotel-name">Húsafell Hotel &amp; Spa ⭐⭐⭐⭐</div>
-            <div class="hotel-meta">📍 On-site at Húsafell Resort · Geothermal spa · Restaurant with local lamb &amp; fish</div>
-            <div class="hotel-price">~$220–320/night (includes spa access)</div>
-            <div class="hotel-meta">💡 <strong>Worth it?</strong> You just watched a total solar eclipse. Celebrate! The Húsafell spa uses the same Deildartunguhver geothermal spring water as Krauma next door. Perfect way to wind down before heading back to Reykjavik.</div>
-            <a href="https://www.husafell.is/accommodation/" target="_blank" class="book-btn" style="margin-top:8px;background:rgba(181,123,238,0.1);color:var(--purple);border-color:rgba(181,123,238,0.3)">🏨 Húsafell Hotel</a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- NIGHT 13: Reykjavik Return -->
-    <div class="night-card">
-      <div class="card-header" style="border-left: 4px solid #ffb347;">
-        <div class="day-badge">AUG 14–15 · NIGHT 13</div>
-        <h3>Reykjavik — Final Night</h3>
-        <span class="urgency-pill urgency-high">BOOK EARLY</span>
-      </div>
-      <div class="card-body">
-        <div class="campsite-name">Reykjavik Campsite (Laugardalur)</div>
-        <div class="campsite-location">📍 Sundlaugavegur 32 · Near Blue Lagoon transfer point</div>
-        <div class="facilities">
-          <span class="facility-tag has">🚿 Hot Showers</span>
-          <span class="facility-tag has">🚽 Flush Toilets</span>
-          <span class="facility-tag has">🍳 Full Kitchen</span>
-          <span class="facility-tag has">♻️ Laundry</span>
-        </div>
-        <div class="info-row"><span class="label">Cost per night</span><span class="value cost">~$55–70 (2 people)</span></div>
-        <div class="info-row"><span class="label">Departure</span><span class="value">Aug 15 — Alaska Air from KEF</span></div>
-        <div class="info-row"><span class="label">Day plan</span><span class="value note">Blue Lagoon (evening Aug 14), city last dinner, pack van for return</span></div>
-        <a href="https://www.tjalda.is" target="_blank" class="book-btn">📅 Book on Tjalda</a>
-        <a href="https://reykjavikcampsite.is" target="_blank" class="book-btn secondary">🌐 Direct</a>
-        <div class="hotel-upgrade">
-          <button class="hotel-toggle-btn" onclick="toggleHotel(this)">🏨 Comfort Upgrade Option — Last Night Treat? <span class="arrow">▼</span></button>
-          <div class="hotel-upgrade-body">
-            <div class="hotel-name">Hotel Reykjavik Grand ⭐⭐⭐⭐</div>
-            <div class="hotel-meta">📍 Sigtún 38 · Shuttle-close to KEF · Breakfast included · Easy van drop-off logistics</div>
-            <div class="hotel-price">~$180–240/night (incl. breakfast)</div>
-            <div class="hotel-meta">💡 <strong>Worth it?</strong> On your final night before an early flight home, avoiding campsite tear-down stress is huge. Hotel also means hot shower, luggage storage, and a proper farewell Reykjavik dinner. Alaska Air departures from KEF — check your flight time.</div>
-            <div class="hotel-name" style="margin-top:8px">Splurge pick: Hotel Borg ⭐⭐⭐⭐⭐</div>
-            <div class="hotel-meta">📍 Art Deco landmark · City center · Iceland's most iconic hotel</div>
-            <div class="hotel-price">~$300–400/night</div>
-            <a href="https://grand.islandshotel.is" target="_blank" class="book-btn" style="margin-top:8px;background:rgba(181,123,238,0.1);color:var(--purple);border-color:rgba(181,123,238,0.3)">🏨 Hotel Grand</a>
-            <a href="https://www.hotelborg.is" target="_blank" class="book-btn secondary">🏨 Hotel Borg</a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- /nights-grid -->
 </div>
 
-<!-- PANEL: ADVANCE BOOKINGS -->
-<div class="panel" id="panel-advance">
-  <div class="section-title">📋 Advance Booking Checklist</div>
-  <div class="section-sub">Everything that needs to be reserved before you leave. Sorted by priority.</div>
+<!-- ===================== ITINERARY ===================== -->
+<div id="tab-itinerary" class="tab-content">
+  <h2>Trip Timeline</h2>
 
-  <table class="advance-table">
-    <thead>
-      <tr>
-        <th>Priority</th>
-        <th>What to Book</th>
-        <th>When</th>
-        <th>Est. Cost</th>
-        <th>Lead Time</th>
-        <th>Book Here</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr class="priority-row">
-        <td class="urgency-cell"><span class="urgency-pill urgency-critical">🔴 NOW</span></td>
-        <td class="item-name">Hellissandur Campsite<br><span style="font-size:11px;color:var(--muted);font-weight:400">Aug 11–13 · Eclipse nights</span></td>
-        <td class="item-date">TODAY</td>
-        <td class="item-cost">~$50–80/night</td>
-        <td>Books out 6+ months before eclipse</td>
-        <td class="item-link"><a href="https://www.tjalda.is" target="_blank">tjalda.is ↗</a></td>
-      </tr>
-      <tr class="priority-row">
-        <td class="urgency-cell"><span class="urgency-pill urgency-critical">🔴 NOW</span></td>
-        <td class="item-name">Blue Lagoon<br><span style="font-size:11px;color:var(--muted);font-weight:400">Aug 14 evening — premium slot</span></td>
-        <td class="item-date">TODAY</td>
-        <td class="item-cost">~$80–160/person</td>
-        <td>Fully pre-booked months ahead in August</td>
-        <td class="item-link"><a href="https://www.bluelagoon.com/spa-experiences" target="_blank">bluelagoon.com ↗</a></td>
-      </tr>
-      <tr>
-        <td class="urgency-cell"><span class="urgency-pill urgency-high">🟠 ASAP</span></td>
-        <td class="item-name">Baldur Ferry (2× crossings)<br><span style="font-size:11px;color:var(--muted);font-weight:400">Stykkishólmur→Brjánslækur &amp; return</span></td>
-        <td class="item-date">ASAP</td>
-        <td class="item-cost">~$130–180 per crossing (van + 2 people)</td>
-        <td>Camper vans need advance booking</td>
-        <td class="item-link"><a href="https://www.seatours.is/baldur-ferry/" target="_blank">seatours.is ↗</a></td>
-      </tr>
-      <tr>
-        <td class="urgency-cell"><span class="urgency-pill urgency-high">🟠 ASAP</span></td>
-        <td class="item-name">Tjöruhúsið Restaurant<br><span style="font-size:11px;color:var(--muted);font-weight:400">Ísafjörødur · Legendary fish stew buffet</span></td>
-        <td class="item-date">ASAP</td>
-        <td class="item-cost">~$40–55/person</td>
-        <td>Fills within days of opening in spring</td>
-        <td class="item-link"><a href="https://www.tjoruhusid.is/" target="_blank">tjoruhusid.is ↗</a></td>
-      </tr>
-      <tr>
-        <td class="urgency-cell"><span class="urgency-pill urgency-high">🟠 ASAP</span></td>
-        <td class="item-name">Reykjavik Campsite<br><span style="font-size:11px;color:var(--muted);font-weight:400">Nights 1–2 (Aug 3–5) and Night 13 (Aug 14–15)</span></td>
-        <td class="item-date">1–3 months ahead</td>
-        <td class="item-cost">~$55–70/night</td>
-        <td>Peak season fills quickly</td>
-        <td class="item-link"><a href="https://reykjavikcampsite.is" target="_blank">reykjavikcampsite.is ↗</a></td>
-      </tr>
-      <tr>
-        <td class="urgency-cell"><span class="urgency-pill urgency-medium">🟡 2–3 MO</span></td>
-        <td class="item-name">Fridheimar Greenhouse Dinner<br><span style="font-size:11px;color:var(--muted);font-weight:400">Golden Circle · Tomato farm &amp; horse show</span></td>
-        <td class="item-date">2–3 months ahead</td>
-        <td class="item-cost">~$50–65/person</td>
-        <td>Popular year-round, advance booking required</td>
-        <td class="item-link"><a href="https://www.fridheimar.is/en" target="_blank">fridheimar.is ↗</a></td>
-      </tr>
-      <tr>
-        <td class="urgency-cell"><span class="urgency-pill urgency-medium">🟡 2–3 MO</span></td>
-        <td class="item-name">Glacier Hike — Snæfellsjökull<br><span style="font-size:11px;color:var(--muted);font-weight:400">Summit climb with guide · Aug 7 or 8</span></td>
-        <td class="item-date">2–3 months ahead</td>
-        <td class="item-cost">~$90–150/person</td>
-        <td>Weather-dependent, limited group sizes</td>
-        <td class="item-link"><a href="https://www.snaefellsjokulltours.is" target="_blank">snaefellsjokulltours.is ↗</a></td>
-      </tr>
-      <tr>
-        <td class="urgency-cell"><span class="urgency-pill urgency-medium">🟡 2–3 MO</span></td>
-     �\��H�][K[�[YH����HY��ۏ����[��[OH��۝\�^�N�L\���܎��\�K[]]Y
-Nٛ۝]�ZY�����^Zژ]�Z�\�XH0��[\��]]�H��YHY��ۈ
-\��]�[^JO��[������\��H�][KY]H��x�$̈[۝�ZXY����\��H�][KX������
-�8�$�L�\��ۏ�������\��]�[Y^HX�]�]H
-���H��Q�O����\��H�][K[[�ȏ�H�Y�H�΋����˜��[Y��ۋ���H�\��]H�؛[�ȏ���[Y��ۋ���H8����O������������\��H�\��[��KX�[���[��\��H�\��[��K\[\��[��K[YY][H��'��H��$��S���[������\��H�][K[�[YH���۝[�H�[�\�X[�]�����[��[OH��۝\�^�N�L\���܎��\�K[]]Y
-Nٛ۝]�ZY����]Y�\��]�0����[��\��H^H0���YH��XY�Z�Y[�ܛ�[���[������\��H�][KY]H��H[۝ZXY����\��H�][KX�������8�$�
-K�\��ۏ�����[\��]\�X[H]�Z[X�O����\��H�][K[[�ȏ�H�Y�H�΋����˙�۝[�K�\��[�Ȉ\��]H�؛[�ȏ��۝[�K�\�8����O������������\��H�\��[��KX�[���[��\��H�\��[��K\[\��[��K[�ȏ�'���VP�O��[������\��H�][K[�[YH��ܛ���[�\�^HZ�H��]����[��[OH��۝\�^�N�L\���܎��\�K[]]Y
-Nٛ۝]�ZY�������H0�\�Y��휰�\�0���[[�H�]\�H�\�\��O��[������\��H�][KY]H��x�$̈[۝�ZXY����\��H�][KX������8�$�L��\��ۈ��[��\�����X]\�\�Z][��[Z]Y��]�����\��H�][K[[�ȏ�H�Y�H�΋����˝�\���ܙ˚\��[��[�^[�\�]�\��[��ܝ�ܛ���[�\��\��]H�؛[�ȏ��\���ܙ˚\�8����O������������\��H�\��[��KX�[���[��\��H�\��[��K\[\��[��K[�ȏ�'���VP�O��[������\��H�][K[�[YH���Xܙ]Y��ۈ
-�[[H]Y�[�O����[��[OH��۝\�^�N�L\���܎��\�K[]]Y
-Nٛ۝]�ZY�����0��\�0��X�[[�	���\��[�\�X[����[������\��H�][KY]H��H�]��YZ������\��H�][KX�������K�\��ۏ����\�X[H]�Z[X�K�]������X\�[�YO����\��H�][K[[�ȏ�H�Y�H�΋���Xܙ]Y��ۋ�\�Ȉ\��]H�؛[�ȏ��Xܙ]Y��ۋ�\�8����O������������\��H�\��[��KX�[���[��\��H�\��[��K\[\��[��K[�ȏ�'���VP�O��[������\��H�][K[�[YH��X]\����Z��\��\�]\�[�����[��[OH��۝\�^�N�L\���܎��\�K[]]Y
-Nٛ۝]�ZY�����^Zژ]�Z�0���Y][ۘ[X�[[�X��]��]�H�Z\�[�O��[������\��H�][KY]H����$��YZ��ZXY����\��H�][KX������
-�8�$�L�\��ۏ�����[\��]\�X[HX[�Y�XX�O����\��H�][K[[�ȏ�H�Y�H�΋��X]\����Z��\��\�Ȉ\��]H�؛[�ȏ�X]\����Z��\��\�8����O�����������O���X�O���]����KKHS�S�T�KO��]��\��H�[�[�YH�[�[]\ȏ��]��\��H��X�[ۋ]]H��'�H�[\[��\�	�[\�[ۙ^H�]�\���]���]��\��H��X�[ۋ\�X���[��Y\�Y�X�H�܈�[\\��[��]�[[�X�[[��]����]��\��H���X�����]��\��H�[���X�����ϼ'���X�[[��[\[���\��ς��H�[��H�\�]�]�\���Y��و�[\[���܈�[�HXܛ���M�
-��[\�]\ˈ]��Y�H�[��\��H�Y�Y�����NNx�$̍O��[��
-8�b	�Mx�$̍�
-K]�[��]�H[�H�YۚY�X�[�[ۙ^Hۈ�[\�]H�Y\��ˈ^Z[��[�]�YX[H
-�
+  <div class="note" style="margin-bottom:18px;">Only confirmed bookings are shown. Unbooked days are open — plans TBD.</div>
 
-x�$��ۚY�\��]JK����[��O���ۙϐ�\��܎����ۙψ�\�L
-��Y���^Z[��]Y[X�\��]\��O��O���ۙϓ��N����ۙψ��[�]\�\�HY[X�\��8�%[\��[�\�\��X[\�[�X^H��\�X�\]K��\�Y�H]�[\[���\��\��O��O���ۙϐ�^Hۛ[�N����ۙψ�[\[���\��\�8�%[��]�Z[X�H]��YH�[\�]\��O���[��H�Y�H�΋����˘�[\[���\��\�Ȉ\��]H�؛[�Ȉ�\��H�����X����[OH�X\��[�]��L���'����]�[\[���\��O���]����]��\��H�[���X�����ϸ���[K�\�8�%ٙ�X�X[����[��]�ܛO�ς��X�[[�	��ٙ�X�X[�[\�]H����[���\�[K�[���Y�\�\�Y�[\�]\�\�H]��[��\��H�Y�Y���[�^\������Y�\�\�Y�[\�]\���[��8�%�[�[\[��[��[\\��[��\�[Y�[[�X�[[��[��H�MK����[��O��X\���H�Y�[ۈ܈�[\�]H�[YO�O��O���YH�]\�[��]�H\�X�����[���O��O�^[Y[�ۈ\��]�[ٝ[�X��\Y�]��ۙϜ�\�\��][ۈ�[�\]Z\�Y���ۙψ[�XZ��X\�ۏ�O��O�\]�Z[X�H�܈S��[�[���Y�O���[��H�Y�H�΋����˝�[K�\Ȉ\��]H�؛[�Ȉ�\��H�����X����[OH�X\��[�]��L���'��H����[K�\��O���]����]����]��\��H���X�����]��\��H�[���X�����ϼ'�����\���]Y�O�ς��X�[[�	��][�X�\[���
-[O��[�]Y�\��[O�H\�H]�\�]�\�H[�\�X[H�\��H	
-x�$�L�܈[��H8�%\��[��\��H�Y�Y���[��Y\�����\��[��X����[���]�[�Y�[�Hۉ���[KX[�H�]�[\���^H��[��H�\��܈H����\�[���Zˏ���[��O���ۙϑܝ[�\���휰�\�������ۙψ�X[�ۈ���\�H��[�O��O���ۙϰ�\�Y��휰�\�������ۙψܙX]�[�X�[]O�O��O���ۙϓ]Y�\�[\����^Zژ]�ZΏ���ۙψۙHوH�\�[�X�[[��O��O��[\�]H���\�Έ\�X[H��[�[�\�]Y
-�8�$�LT��8�b	K�L8�$�ˍL
-O�O���[���]����]��\��H�[���X�����ϼ'�����	�[\�ܛ��\�H\��ς��X][���][�X�[[�\�^[��]�K��[��\��H�Y�Y���[�
-�8�$��	HYX[�[�H�[���[���܈H�\���ܙ�\�X�X[K����[��O���ۙϐ��۝\Ώ���ۙψ�X\\�ܛ��\�H�Z[�
-Y[��Y����H8�%����\[��^Zژ]�Z�[�0�\�Y��휰�\��O��O���ۙϒܛۘ[�����ۙψ�X�ۙ�X\\��O��O���ۙϓ�]0�Ώ���ۙψ[���Y�]Y��Y[�O�O��O���ۙϑ�\��][ۜ�
-�Kܚ�[�N����ۙψ]�H����8�%�\��\�[��HX�[�	�[\��۝�[�Y[��O��O���ۙϕ�\������Ώ���ۙψ�\�H[Z]Yܛ��\�H�[ۜ�8�%��[���]�\�[^\�و�\Y\����H0�\�Y��휰�\��O���[���]����]����]��\��H���X�����]��\��H�[���X�����ϼ'��H\�Y�[\���ۛ�Y�ς�[��O���ۙϕ�[N����ۙψ�[\�]H����[��	�[\�X\�O��O���ۙϕ�Y\��\Ώ���ۙψX�[[�	��ٙ�X�X[�X]\�\
-�\�\�ݙ\�����JO�O��O���ۙόLL��\Ώ���ۙψX�[[�	��[Y\��[��H�Y�]H\8�%�Y�\�\�[�\��\�O��O���ۙϓX\˛YN����ۙψٙ�[�HX\�
-\��[�X[�܈�\���ܙ�O�O��O���ۙϔ�Y�]�]�[�\Ώ���ۙψ��Y�ۙ][ۜ�	�[\��]�[[\���O��O���ۙϑX�\�H�Y�\�N����ۙψX�\�H]	�[\�[Z[��\�O���[���]����]��\��H�[���X�����ϼ'�({�#�]Y�\��X]\�	�[\��]�X���ς�[��O���ۙϐ]�\�Y�H[\����ۙψL8�$�M0��
+  <div class="day-block phase-travel">
+    <div class="day-num">Sun<br/>Aug 2</div>
+    <div class="day-content">
+      <h4>✈️ Depart PDX <span class="badge badge-green">CONFIRMED</span></h4>
+      <p>PDX → SEA → KEF overnight. Alaska CZTRUB / Icelandair BFD2GQ.</p>
+    </div>
+  </div>
 
-L8�$�M��H8�%��[��^Y\���O��O���ۙϔ�Z[�����ۙψX���]\���و�X��]	�[\�[��8�%]�[�Z[��O��O���ۙϕ�[�����ۙψ��ۙ�\�[�^X�Y\�X�X[H�\���ܙ��O��O���ۙϑX�\�H�\��\Ώ���ۙψ��[���\�Y�YYT��L��L�L��\��\�8�%X^H�H\���[���[O�O��O���ۙϓZY�Y��[�����ۙψ�X���]�[���܈H�[�\�H\��[�X[8�%�[��\�[H�]�[�]Y�\��O��O���ۙϒZ�[�����Ώ���ۙψ�]\���ً����[�Z[��O���[���]����]����]��\��H�[���X�����ϼ'�,H�]�Y��\�	�[\�[�^X�Y�[\������(����������܁����́ѡ�Ё������ݥѠ���ȁ��ѕɕ��́ѡ�Ё����Ё�������م��������������Ё�ɔ�ݽ�Ѡ�͕�������������(�����հ�(�����������ɽ���-��х�������ͧ���
-�Ё
-�����I�孩�٥������ɽ����%�������́����Ё��Ё������P����䰁ɕͥ���Ё���̰��ɕ�Ё��������9������������Յ��䁹������𽱤�(�����������ɽ���M��ѱ����Ё
-���ɔ��	�ɝ�ɹ������ɽ����ፕ����ЁY���������ѽ�䁕ᡥ��Ѓ�P������ȁ�ɥٔ�ͽ�Ѡ��ɽ��]��љ��ɑ̸�	Ց��Ѐȁ����̸𽱤�(�����������ɽ���%�����������Ё
-��ѕȰ�#����������ɽ����9��ȁ#�ͅ������P���ѕɅ�ѥٔ���ɴ�ݥѠ��������ɕ��%�������������̸�
-��ɵ���������ɕ��𽱤�(�����������ɽ���I�孩�٥��	�х�������ɑ����Ʌͅ�����ɥ�������ɽ����ɕ�������ѥ�հ���������ЁѼ�1�՝�ɑ���ȁ
-���ͥє��P���ə��Ё��ɥم����䁝�ɑ���݅���𽱤�(�����������ɽ���]���������
-Ʌ�Ё͡�������ɽ����!����ɫ鹅ͅ���������!�������ѥ����ͽ���ѥ������%�����������I�孩�٥����ȁ��ѡ��ѥ���������̈́��ݕ�ѕ�̸𽱤�(�����հ�(��𽑥��(𽑥��((�����A90�
-=MQL������F�b6�73�'�V�"�C�'�V��6�7G2#��F�b6�73�'6V7F����F�F�R#�	�+'VFvWBW7F��FS��F�c��F�b6�73�'6V7F����7V"#�&�Vv�6�7B'&V�F�v�f�""V��R�"�v�G2���f�wW&W2��U4B&����F���2���F�cࠢ�F�b6�73�'Gv��6��#��F�b6�73�&��f��&��#�ƃ3�	��^���6���rf��66����FF������3��F&�R6�73�&6�7B�F&�R#��G#��FC�"�v�G26���r�frCS��v�Bf�""���FC��FC��Cc��FC���G#��G#��FC��"�6V��B6���r6&B�#��v�G2�"V��R���FC��FC��C#3��FC���G#��G#��FC�6�6�FR6��vW'2�6������W�G&���FC��FC��C#(	3C��FC���G#��G"6�73�'F�F�#��FC��7G&��s�D�D�(	B��6���s��7G&��s���FC��FC��7G&��s��Cc(	3cS��7G&��s���FC���G#��G"6�73�'F�F�#��FC��7G&��s�D�D�(	Bv�F�6���r6&C��7G&��s���FC��FC��7G&��s��C#S(	3#s��7G&��s���FC���G#��G#��FB6��7��#""7G��S�'FF��r�F��'��6���#�f"���W'�R��f��B�6��S���f��B�vV�v�C�s�FW�B�G&�6f�&ӧWW&66S��WGFW"�76��s��W�#�	�����%$�B�D�����FV�fWr�v�G2�6�F�R&W7C��FC���G#��G#��FC��v�G2f��2(	B&W���f����FV��"�v�G2���FC��FC��C3(	3S��FC���G#��G#��FC��v�Bb(	B7G����6�;6��W"��FV��&R�fW''����FC��FC��CS(	3#��FC���G#��G#��FC��v�G2�(	3�(	B8�6f�;g,;�W"��FV��"�v�G2���FC��FC��C3#(	3CC��FC���G#��G#��FC��v�B"(	B�;�6fV����FV��7��7B�V6Ɨ6R���FC��FC��C##(	33#��FC���G#��G#��FC�&V����rr�v�G26���s��FC��FC��C3S��FC���G#��G"6�73�'F�F�"7G��S�&6���#�f"���W'�R�#��FC��7G&��s�D�D�(	B��'&�B���FV�b�v�G2�6�r���7G&��s���FC��FC��7G&��s��C�3C(	3Ã��7G&��s���FC���G#���F&�S���F�cࠢ�F�b6�73�&��f��&��#�ƃ3�	��f�f��G&�7�'C���3��F&�R6�73�&6�7B�F&�R#��G#��FC�d�BF�&�;"���&V�F��"�v�G2�wV�FRF��6V��B���FC��FC��CÃ(	3"�#��FC���G#��G#��FC�gVV���S���F�W6V��W7B�t���ғ��FC��FC��CS(	3#��FC���G#��G#��FC�&�GW"fW''��f��"V��R9r"7&�76��w2���FC��FC��C#c(	33c��FC���G#��G#��FC�&���rf��6�6�FR66W72fVW3��FC��FC��C3(	3S��FC���G#��G"6�73�'F�F�#��FC��7G&��s�D�D�(	Bf�f��G&�7�'C��7G&��s���FC��FC��7G&��s��C"�#S(	3"Ã��7G&��s���FC���G#���F&�S���F�cࠢ�F�b6�73�&��f��&��#�ƃ3�	�ybW�W&�V�6W2f��7F�f�F�W3���3��F&�R6�73�&6�7B�F&�R#��G#��FC�&�VR�v����"V��R�&V֗Vғ��FC��FC��C#(	3#���FC���G#��G#��FC�6���v����"V��R���FC��FC��C#(	3���FC���G#��G#��FC�v�6�W"���R(	B6�:ffV��6�;f�V���"V��R���FC��FC��C�(	3#c��FC���G#��G#��FC��&�7G&�F�"F�&�B�"V��R���FC��FC��Cc(	3#��FC���G#��G#��FC�f��F��6V7&WB�v����"V��R���FC��FC��CS(	3���FC���G#��G#��FC��V�6�����2�7V�F�Vv"�W7B�Rf�6�G2���FC��FC��CS(	3s��FC���G#��G"6�73�'F�F�#��FC��7G&��s�D�D�(	BW�W&�V�6W3��7G&��s���FC��FC��7G&��s��Csc(	3�s��7G&��s���FC���G#���F&�S���F�cࠢ�F�b6�73�&��f��&��#�ƃ3�	������f��Bf��F���s���3��F&�R6�73�&6�7B�F&�R#��G#��FC�w&�6W&�W2f�"f��V�2��CC�F�9rF�2���FC��FC��CC��FC���G#��G#��FC�F�;g'V�;�6�;F���W"�"V��R���FC��FC��C�(	3��FC���G#��G#��FC�g&�F�V��"w&VV��W6R�"V��R���FC��FC��C(	3#��FC���G#��G#��FC��GW"�rG'���W"�&W���f���"V��R���FC��FC��C#(	3c��FC���G#��G#��FC�v27FF����V�2�6�ffVR�W7B��7F�2���FC��FC��C(	33��FC���G#��G#��FC�֗62F���r�WB�.(	32�F�W"�V�2���FC��FC��C(	3S��FC���G#��G"6�73�'F�F�#��FC��7G&��s�D�D�(	Bf��C��7G&��s���FC��FC��7G&��s��C�(	3�c��7G&��s���FC���G#���F&�S���F�c���F�cࠢ�F�b6�73�&��f��&��#�ƃ3�	�8�w&�BF�F�W7F��FS���3��F&�R6�73�&6�7B�F&�R#��G#��FC�6���rf��66����FF������6����FC��FC��Cc��FC���G#��G#��FB7G��S�&6���#�f"���W'�R�#�	���66����FF������'&�B(	Bb��FV��v�G2���FC��FB7G��S�&6���#�f"���W'�R�#��C�3C(	3Ã��FC���G#��G#��FC�f�&V�F�f��G&�7�'C��FC��FC��C"�#S(	3"Ã��FC���G#��G#��FC�W�W&�V�6W2f��7F�f�F�W3��FC��FC��Csc(	3�s��FC���G#��G#��FC�f��Bf��F���s��FC��FC��C�(	3�c��FC���G#��G#��FC�֗66V���V�W2�'VffW#��FC��FC��C#(	33��FC���G#��G"6�73�'F�F�#��FC��7G&��s�D�D�(	BgV��6���rG&���7G&��s���FC��FC��7G&��s��CB�s(	3RÃ3��7G&��s���FC���G#��G"6�73�'F�F�"7G��S�&6���#�f"���W'�R�#��FC��7G&��s�D�D�(	B��'&�B�b��FV��v�G2���7G&��s���FC��FC��7G&��s��CR�CS(	3r�C��7G&��s���FC���G#��G"6�73�'F�F�#��FC��7G&��s�fƖv�G2��6��"E�(i$�Tb��&VG�&���VB���7G&��s���FC��FC��7G&��s���B��6�VFVC��7G&��s���FC���G#���F&�S��7G��S�&6���#�f"����WFVB��f��B�6��S�'���&v���F��'�#�	�*�7G&��r7G��S�&6���#�f"���FW�B�#����6�'VFvWBF����7G&��s�W6��rF�R�6V��B6���r6&B6fW2WF�C3s�6�����r��7B�V�2��F�Rf�6fW2��F�W"CC(	3S�'VFvWB�6��66��W2���6�G&�6�V�B6��R��V�FW"CB������7G��S�&6���#�f"���W'�R��f��B�6��S�'���&v���F����#�	����7G&��r7G��S�&6���#�f"���FW�B�#䇖'&�B�F�����7G&��s���FV��v�G2B&W���f���7G����6�;6��W"�8�6f�;g,;�W"��B�;�6fV��v�fR��R6��f�'B&���V�G2&�V�BF�Rv��B6���r7G&WF6�W2(	B�B��RF�RV6Ɨ6R�v�BfVV�WfV���&R7V6��'�6��G&7B��V�F�R�V���FV�Ww&FS��V��F�vv�W2��F�R�v�B�'���v�BF"f�"7V6�f�2�6�2������F�c���F�c���F�c�����6��FV�B��ࠣ�F�b6�73�&f��FW"#�'V��Bf�"����f���Vfb�46&FV�+r6�6��rF�RV6Ɨ6R##b+r�6V��BVr>(	3R+r��&Vc�&6��WFW#����6W76���2�6����w&6��W2���fV�6R���B��WGWG2��6V��B�G&����F��"7G��S�&6���#�f"���FV�FW�B�FV6�&F������R#�f�Wr��FW&7F�fR�(is�����F�cࠣ�67&�C�gV�7F���6��u�V��R���F�7V�V�B�VW'�6V�V7F�$�r��V�r��f�$V6�����6�74Ɨ7B�&V��fR�v7F�fRr����F�7V�V�B�VW'�6V�V7F�$�r�F"r��f�$V6��B��B�6�74Ɨ7B�&V��fR�v7F�fRr����F�7V�V�B�vWDV�V�V�D'��B�w�V��r���R��6�74Ɨ7B�FB�v7F�fRr���WfV�B�F&vWB�6�74Ɨ7B�FB�v7F�fRr���ЦgV�7F���F�vv�T��FV'F���'F��6�74Ɨ7B�F�vv�R�v�V�r���6��7B&�G��'F���W�DV�V�V�E6�&Ɩ�s��&�G��6�74Ɨ7B�F�vv�R�v�V�r���У��67&�C���&�G�����F���
+  <div class="day-block phase-travel">
+    <div class="day-num">Mon<br/>Aug 3</div>
+    <div class="day-content">
+      <h4>🛬 Arrive KEF · 🏨 Vintage Apartment Hotel <span class="badge badge-green">CONFIRMED</span></h4>
+      <p>Land 9:25 AM. Self-service check-in — entry code sent day before. Booking #86746010.</p>
+    </div>
+  </div>
+
+  <div class="day-block phase-travel">
+    <div class="day-num">Tue<br/>Aug 4</div>
+    <div class="day-content">
+      <h4>🚐 Collect Camper <span class="badge badge-green">CONFIRMED</span></h4>
+      <p>CozyCampers pickup noon — Kársnesbraut 106, Kópavogur. Code GYP9GK.</p>
+    </div>
+  </div>
+
+  <div class="day-block" style="border-left:3px solid #30363d;">
+    <div class="day-num" style="background:#161b22;color:#484f58;">Aug<br/>5–10</div>
+    <div class="day-content">
+      <h4 style="color:#484f58;">Open — TBD</h4>
+      <p style="color:#484f58;">No confirmed bookings for these days yet.</p>
+    </div>
+  </div>
+
+  <div class="day-block phase-eclipse">
+    <div class="day-num">Tue<br/>Aug 11</div>
+    <div class="day-content">
+      <h4>🏕️ Check In — Eldborg Campsite at Snorrastaðir <span class="badge badge-green">CONFIRMED</span></h4>
+      <p>Snorrastaðir, 311 Borgarbyggð · Reservation #36-532-18003-341978 · Check in after 3 PM · 40,800 ISK paid</p>
+    </div>
+  </div>
+
+  <div class="day-block phase-eclipse">
+    <div class="day-num">Wed<br/>Aug 12</div>
+    <div class="day-content">
+      <h4>☀️🌑 ECLIPSE DAY <span class="badge badge-green">CONFIRMED — CAMPSITE</span></h4>
+      <p><strong style="color:#f85149;">Totality 5:44 PM · ~2m07s</strong> · Eldborg Campsite at Snorrastaðir</p>
+    </div>
+  </div>
+
+  <div class="day-block phase-eclipse">
+    <div class="day-num">Thu<br/>Aug 13</div>
+    <div class="day-content">
+      <h4>🏕️ Checkout Snorrastaðir · 🚐 Drop Camper · 🏨 Check In Reykjavik Lights <span class="badge badge-green">CONFIRMED</span></h4>
+      <p>Campsite checkout before noon. Camper dropoff noon — Kársnesbraut 106, Kópavogur. Hotel check-in from 15:00 — Sudurlandsbraut 12, 108 Reykjavik. Confirmation 0348Z4PQO (nights of Aug 13 &amp; 14).</p>
+    </div>
+  </div>
+
+  <div class="day-block phase-travel">
+    <div class="day-num">Fri<br/>Aug 14</div>
+    <div class="day-content">
+      <h4>🏨 Reykjavik Lights — Hotel Day <span class="badge badge-green">CONFIRMED</span></h4>
+      <p>Second night at Reykjavik Lights hotel. No camper. Day open — explore Reykjavik on foot. Confirmation 0348Z4PQO.</p>
+    </div>
+  </div>
+
+  <div class="day-block phase-travel">
+    <div class="day-num">Sat<br/>Aug 15</div>
+    <div class="day-content">
+      <h4>🏨 Checkout · ✈️ Fly Home KEF → PDX <span class="badge badge-green">CONFIRMED</span></h4>
+      <p>Hotel checkout by 11:00. KEF departs 10:40 AM · Arrive PDX 2:48 PM · Alaska CZTRUB / Icelandair BFD2GQ.</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================== MAP ===================== -->
+<div id="tab-map" class="tab-content">
+  <h2>Trip Map</h2>
+  <div class="note">Confirmed stops are the larger pins; purple dots are points of interest. The shaded band is the Aug 12 path of totality — the Snorrastaðir base sits inside it. Basemap needs internet to load.</div>
+  <div class="map-legend">
+    <div class="ml"><span class="dot" style="background:#4a9e8a"></span>Reykjavik &amp; arrival</div>
+    <div class="ml"><span class="dot" style="background:#dc2626"></span>Eclipse base</div>
+    <div class="ml"><span class="dot" style="background:#d97706"></span>Reykjavik finish</div>
+    <div class="ml"><span class="dot" style="background:#a855f7"></span>Points of interest</div>
+    <div class="ml"><span class="dot" style="background:#22d3ee"></span>Yoga studios</div>
+  </div>
+  <div id="map"></div>
+</div>
+
+<!-- ===================== CITY ===================== -->
+<div id="tab-city" class="tab-content">
+  <h2>Reykjavik &amp; Capital Area</h2>
+  <div class="note">Zoomed in for getting oriented on foot and collecting close-in spots — food, sights, pools, yoga, and the lagoons reachable before/after the trip.</div>
+  <div class="map-legend">
+    <div class="ml"><span class="dot" style="background:#f59e0b"></span>Eat / coffee</div>
+    <div class="ml"><span class="dot" style="background:#58a6ff"></span>Sights</div>
+    <div class="ml"><span class="dot" style="background:#3fb950"></span>Pool / spa</div>
+    <div class="ml"><span class="dot" style="background:#22d3ee"></span>Yoga</div>
+    <div class="ml"><span class="dot" style="background:#a855f7"></span>Other</div>
+    <div class="ml"><span class="dot" style="background:#3fb950;width:14px;height:14px;border:2px solid #fff"></span>Hotel (confirmed)</div>
+  </div>
+  <div id="citymap" style="height:70vh;min-height:420px;border-radius:10px;border:1px solid #21262d;"></div>
+</div>
+
+<!-- ===================== IDEAS ===================== -->
+<div id="tab-ideas" class="tab-content">
+  <h2>Ideas</h2>
+  <div class="note">Everything marked on the Map, grouped by type. The same list, in text form.</div>
+  <div id="ideas-list"></div>
+</div>
+
+<!-- ===================== ECLIPSE ===================== -->
+<div id="tab-eclipse" class="tab-content">
+  <h2>Solar Eclipse — August 12, 2026</h2>
+
+  <div class="note">You sleep at the <strong>Eldborg/Snorrastaðir</strong> campsite (eastern Snæfellsnes). <strong>Ondverðarnes</strong>, near the western tip, is a possible viewing spot with a glacier-and-ocean foreground — about 80 km / 1 hr west. Both are inside the path of totality; you can also simply watch from the base.</div>
+
+  <div class="card eclipse">
+    <h3>Snorrastaðir Base · Ondverðarnes Viewpoint — ~2m07s Totality</h3>
+    <div class="eclipse-timeline">
+      <div class="eclipse-phase">
+        <div class="time">4:43 PM</div>
+        <div class="label">Partial begins</div>
+      </div>
+      <div class="eclipse-phase totality">
+        <div class="time">5:44 PM</div>
+        <div class="label">☀️ TOTALITY</div>
+        <div style="font-size:0.82rem;color:#f85149;font-weight:700;margin-top:4px;">~2m07s</div>
+      </div>
+      <div class="eclipse-phase">
+        <div class="time">5:46 PM</div>
+        <div class="label">Totality ends</div>
+      </div>
+      <div class="eclipse-phase">
+        <div class="time">~6:45 PM</div>
+        <div class="label">Partial ends</div>
+      </div>
+    </div>
+    <div class="totality-bar"></div>
+  </div>
+
+  <div class="two-col">
+    <div class="card info">
+      <h3>Location Comparison</h3>
+      <div style="font-size:0.85rem;line-height:1.8;color:#c9d1d9;">
+        <div>🏆 <strong>Ondverðarnes (Hellissandur)</strong> — ~2m07s · glacier backdrop, ocean horizon · <em>viewpoint, ~80 km west of base</em></div>
+        <div>📍 Ólafsvík — 2m03s · Town amenities</div>
+        <div>📍 Grundarfjörður — 1m50s · Kirkjufell foreground</div>
+        <div>📍 Westfjords — up to 2m13s · Too far, no longer viable</div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Best Foreground Options</h3>
+      <div style="font-size:0.85rem;line-height:1.8;color:#c9d1d9;">
+        <div>🏔️ Ondverðarnes Lighthouse + glacier in background</div>
+        <div>🏔️ Kirkjufell + Kirkjufellsfoss (Aug 7 pre-scouting)</div>
+        <div>🌊 Ocean horizon from Hellissandur headland</div>
+        <div>📍 Scout locations Aug 8–9 before eclipse day</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📷 Eclipse Photography Protocol</h3>
+    <div style="font-size:0.87rem;line-height:1.8;color:#c9d1d9;">
+      <div>1. <strong style="color:#f85149;">Solar filter ON</strong> during all partial phases (before 5:44 PM)</div>
+      <div>2. <strong style="color:#f85149;">Remove filter</strong> just before totality begins — shoot corona, Baily's beads, chromosphere</div>
+      <div>3. <strong style="color:#3fb950;">Actually look</strong> with your own eyes for at least 30 seconds — once in a lifetime</div>
+      <div>4. <strong style="color:#f85149;">Replace filter IMMEDIATELY</strong> when totality ends</div>
+      <div>5. Set intervalometer to auto-shoot during totality (don't manually fiddle)</div>
+      <div>6. Write settings on an index card and tape to tripod leg</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📋 Suggested Totality Settings (tape to tripod)</h3>
+    <div style="font-size:0.85rem;color:#c9d1d9;line-height:1.9;">
+      <div><strong>Partial phases (filter on):</strong> ISO 100 · f/8 · 1/1000s</div>
+      <div><strong>Totality — corona wide:</strong> ISO 400 · f/5.6 · 1/250s → bracket ±2 stops</div>
+      <div><strong>Totality — corona close (telephoto):</strong> ISO 400 · f/8 · 1/500s → bracket</div>
+      <div><strong>Baily's beads / diamond ring:</strong> ISO 100 · f/8 · 1/2000–1/4000s · filter OFF</div>
+      <div style="color:#d29922;margin-top:8px;">Set intervalometer for 2s intervals, let it run — focus on watching</div>
+    </div>
+  </div>
+
+  <div class="card info">
+    <h3>Weather Contingency</h3>
+    <p style="font-size:0.87rem;color:#c9d1d9;line-height:1.6;">Iceland's northwest coast can be cloudy. If Hellissandur forecast looks poor on Aug 10–11, consider day trip to Ólafsvík (~20 min east, same totality zone) or push further east toward Borgarnes. Do NOT chase totality into the Westfjords — too far, too remote. The ring road south of Snæfellsnes is your backup mobility corridor.</p>
+  </div>
+</div>
+
+<!-- ===================== PHOTOGRAPHY ===================== -->
+<div id="tab-photography" class="tab-content">
+  <h2>Photography Highlights</h2>
+
+  <div class="note">
+    <strong>August light:</strong> Golden-hour quality light ~10 PM–2 AM. Having the campervan means you can be at the right waterfall at midnight. Build sleep schedule around this.
+  </div>
+
+  <div class="section-sub">Tier 1 — Non-Negotiables</div>
+  <div class="card">
+    <div class="photo-spot">
+      <h4>🧊 Jökulsárlón Glacier Lagoon + Diamond Beach</h4>
+      <p>Icebergs in the lagoon, ice chunks on black volcanic sand at Diamond Beach. Best at blue hour (10 PM–midnight or 4–6 AM). Plan an early alarm for Aug 14.</p>
+    </div>
+    <div class="photo-spot">
+      <h4>💧 Seljalandsfoss + Skógafoss</h4>
+      <p>Seljalandsfoss: walk behind the waterfall — gets you wet but worth it. Skógafoss: massive 60m drop, rainbow in afternoon light. Both on Aug 13 en route south.</p>
+    </div>
+    <div class="photo-spot">
+      <h4>🏔️ Kirkjufell + Kirkjufellsfoss</h4>
+      <p>Most photographed mountain in Iceland. Also ideal eclipse foreground (Aug 7 scouting). Kirkjufellsfoss in foreground with mountain behind — long exposure at blue hour.</p>
+    </div>
+    <div class="photo-spot">
+      <h4>🗿 Svartifoss</h4>
+      <p>Waterfall framed by hexagonal basalt columns in Skaftafell / Vatnajökull NP. 30-min hike in. Aug 14 area stop.</p>
+    </div>
+  </div>
+
+  <div class="section-sub">Tier 2 — Worth It If Time Allows</div>
+  <div class="card">
+    <div class="photo-spot">
+      <h4>⛰️ Mt. Vestrahorn / Stokksnes</h4>
+      <p>Dramatic peak reflected in black sand dune pools. Near Höfn on the southeast coast. Small fee for access. Potential Aug 14 stop.</p>
+    </div>
+    <div class="photo-spot">
+      <h4>🦜 Dyrhólaey</h4>
+      <p>Clifftop lighthouse with ocean arch below. Puffins most active evenings. Also viewpoint for Reynisfjara (check storm access status).</p>
+    </div>
+    <div class="photo-spot">
+      <h4>🌿 Eldhraun Lava Field</h4>
+      <p>Stunning moss-covered lava field on south coast. Photograph from the road — do NOT walk on the moss (permanent damage, takes centuries to regrow).</p>
+    </div>
+    <div class="photo-spot">
+      <h4>🌊 Goðafoss — Waterfall of the Gods</h4>
+      <p>Near Lake Mývatn. If detouring northeast for eclipse weather contingency, this is a worthy stop. Wide semicircular drop.</p>
+    </div>
+  </div>
+
+  <div class="note" style="border-left-color:#f85149;">
+    <strong>⚠️ 2026 Note:</strong> Reynisfjara beach basalt columns were damaged in a 2026 storm. Check current access status before planning this stop.
+  </div>
+</div>
+
+<!-- ===================== GEAR ===================== -->
+<div id="tab-gear" class="tab-content">
+  <h2>Camera Gear</h2>
+
+  <div class="section-sub">Have</div>
+  <div class="card confirmed">
+    <div class="gear-item">
+      <div class="gear-status" style="color:#3fb950;">✅ Have</div>
+      <div>Nikon DSLR (D-series — check exact model)</div>
+    </div>
+    <div class="gear-item">
+      <div class="gear-status" style="color:#3fb950;">✅ Have</div>
+      <div>Super telephoto (300mm+) — check filter thread size</div>
+    </div>
+    <div class="gear-item">
+      <div class="gear-status" style="color:#3fb950;">✅ Have</div>
+      <div>Prime telephoto</div>
+    </div>
+    <div class="gear-item">
+      <div class="gear-status" style="color:#3fb950;">✅ Have</div>
+      <div>Wide angle lens</div>
+    </div>
+    <div class="gear-item">
+      <div class="gear-status" style="color:#3fb950;">✅ Have</div>
+      <div>24–70mm standard zoom</div>
+    </div>
+    <div class="gear-item">
+      <div class="gear-status" style="color:#3fb950;">✅ Have</div>
+      <div>70–200mm telephoto zoom</div>
+    </div>
+    <div class="gear-item">
+      <div class="gear-status" style="color:#3fb950;">✅ Have</div>
+      <div>Tripod</div>
+    </div>
+    <div class="gear-item">
+      <div class="gear-status" style="color:#d29922;">⚠️ Verify</div>
+      <div>Solar filter from 2017 — locate it + verify thread size matches current super telephoto (⌀77mm? ⌀82mm? check lens barrel)</div>
+    </div>
+  </div>
+
+  <div class="section-sub">Need to Get</div>
+  <div class="card pending">
+    <div class="gear-item">
+      <div class="gear-status" style="color:#f85149;">❌ Need</div>
+      <div>
+        <strong>Remote shutter release / intervalometer</strong> — ~$15–50. Must match D-series body connector: <strong>MC-DC2</strong> (D3100/3200/3300/5100/5200/5300/5500/7100) or <strong>10-pin</strong> (D200/300/700/800/810). Check body model first.
+      </div>
+    </div>
+    <div class="gear-item">
+      <div class="gear-status" style="color:#f85149;">❌ Need</div>
+      <div>
+        <strong>ND filters</strong> — 6-stop and 10-stop for midnight sun waterfall long exposures. Check thread size to match. Lee, B+W, or Hoya are reliable brands.
+      </div>
+    </div>
+    <div class="gear-item">
+      <div class="gear-status" style="color:#f85149;">❌ Verify</div>
+      <div>
+        <strong>Solar filter thread size</strong> — check ⌀ printed on super telephoto lens barrel (usually ⌀77mm or ⌀82mm) and confirm 2017 filter matches. If not, order replacement before June.
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>First step:</strong> Find your Nikon D-series body and check the model number. It's printed on the front below the lens. This unlocks the correct intervalometer connector spec.
+  </div>
+</div>
+
+<!-- ===================== BIRDS ===================== -->
+<div id="tab-birds" class="tab-content">
+  <h2>Birdwatching</h2>
+
+  <div class="bird-section">
+    <h3>🐦 Puffins</h3>
+    <div class="card">
+      <p style="font-size:0.87rem;color:#c9d1d9;line-height:1.7;">Present through end of August — you're right in the window. Most active evenings when they return from fishing. Best locations: <strong>Dyrhólaey</strong> (dramatic cliffs, may have restricted access — check before visiting), <strong>Ingólfshöfði</strong> (guided tractor tour across lagoon — closes mid-August, confirm dates), <strong>Arnarstapi</strong> on Snæfellsnes (accessible, ~60 km west of the base). Also seen on Reykjanes Peninsula cliffs.</p>
+    </div>
+  </div>
+
+  <div class="bird-section">
+    <h3>🐦 Arctic Terns</h3>
+    <div class="card">
+      <p style="font-size:0.87rem;color:#c9d1d9;line-height:1.7;">Everywhere in Iceland in August. Will aggressively dive-bomb your head if you walk near nests — bring a stick to hold overhead (locals do this). More funny than dangerous. Best for photography when they're hovering into the wind.</p>
+    </div>
+  </div>
+
+  <div class="bird-section">
+    <h3>🦆 Lake Mývatn</h3>
+    <div class="card">
+      <p style="font-size:0.87rem;color:#c9d1d9;line-height:1.7;">13 duck species breed here — one of the most diverse duck habitats in the world. If you make the northeast detour (eclipse weather contingency), Mývatn is worth a few hours. Also: possible <strong>gyrfalcon</strong> sightings. Midges are intense in June–July but thin by August.</p>
+    </div>
+  </div>
+
+  <div class="bird-section">
+    <h3>🦅 Other Species</h3>
+    <div class="card">
+      <p style="font-size:0.87rem;color:#c9d1d9;line-height:1.7;">
+        <strong>Guillemots, fulmars, razorbills</strong> — cliff nesters, easily seen at Dyrhólaey, Látrabjarg (Westfjords — not in our route), Arnarstapi.<br/>
+        <strong>Rock ptarmigan</strong> — upland lava fields and Snæfellsjökull area.<br/>
+        <strong>Merlin</strong> — small falcon, seen on open moorland.<br/>
+        <strong>Gyrfalcon</strong> — Reykjanes Peninsula and Mývatn. Iceland's largest falcon.<br/>
+        <strong>Golden plover</strong> — considered the herald of spring in Iceland, still present in August on moorlands.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== TO-DO ===================== -->
+<div id="tab-todos" class="tab-content">
+  <h2>To-Do List</h2>
+
+  <div class="section-sub">✅ Completed</div>
+  <div class="card">
+    <div class="todo-item done-item"><div class="todo-check done"></div><div class="todo-text">Book campervan — CozyCampers Highlander I, code GYP9GK, €6,181 paid in full</div></div>
+    <div class="todo-item done-item"><div class="todo-check done"></div><div class="todo-text">Book flights — Alaska CZTRUB / Icelandair BFD2GQ (PDX → KEF, Aug 2–15)</div></div>
+    <div class="todo-item done-item"><div class="todo-check done"></div><div class="todo-text">Confirm return date — Aug 15 flight home; camper dropped Aug 13, hotel covers final nights</div></div>
+    <div class="todo-item done-item"><div class="todo-check done"></div><div class="todo-text">Cancel cruise and London flights — trip is Iceland-only</div></div>
+  </div>
+
+  <div class="section-sub">🔴 Urgent — Do Now</div>
+  <div class="card pending">
+    <div class="todo-item">
+      <div class="todo-check urgent"></div>
+      <div class="todo-text"><strong>Select Icelandair seats</strong> — go to icelandair.com with code <strong>BFD2GQ</strong> (both legs: SEA→KEF and KEF→SEA). Coach L outbound, Coach Y return.</div>
+    </div>
+    <div class="todo-item">
+      <div class="todo-check urgent"></div>
+      <div class="todo-text"><strong>Add passports to Alaska reservation CZTRUB</strong> — required for international travel. Do this on alaskaair.com.</div>
+    </div>
+  </div>
+
+  <div class="section-sub">🏕️ Campground Notes</div>
+  <div class="card">
+    <div class="todo-item done-item">
+      <div class="todo-check done"></div>
+      <div class="todo-text"><strong>Eclipse campsite Aug 11–13 — CONFIRMED</strong> — Eldborg Campsite at Snorrastaðir, 311 Borgarbyggð. Reservation #36-532-18003-341978. Paid 40,800 ISK. Check-in after 3 PM, checkout before noon Aug 13.</div>
+    </div>
+    <div class="todo-item">
+      <div class="todo-check open"></div>
+      <div class="todo-text"><strong>Complete CozyCampers online check-in</strong> — opens July 28 (168 hours before Aug 4 pickup at 12:00).</div>
+    </div>
+  </div>
+
+  <div class="section-sub">📷 Gear — Do Before July</div>
+  <div class="card">
+    <div class="todo-item">
+      <div class="todo-check open"></div>
+      <div class="todo-text"><strong>Find Nikon body — check exact model number</strong> (printed on front of camera). Needed to determine intervalometer connector type.</div>
+    </div>
+    <div class="todo-item">
+      <div class="todo-check open"></div>
+      <div class="todo-text"><strong>Check solar filter thread size</strong> — look at ⌀ printed on super telephoto lens barrel (likely ⌀77mm or ⌀82mm). Confirm 2017 filter still fits and is undamaged.</div>
+    </div>
+    <div class="todo-item">
+      <div class="todo-check open"></div>
+      <div class="todo-text"><strong>Order intervalometer / remote shutter release</strong> — ~$15–50. Must match Nikon D-series connector (MC-DC2 or 10-pin — check after confirming body model). Critical for eclipse totality shots.</div>
+    </div>
+    <div class="todo-item">
+      <div class="todo-check open"></div>
+      <div class="todo-text"><strong>Order ND filters</strong> — 6-stop and 10-stop, correct thread size for lenses. For midnight sun waterfall long exposures.</div>
+    </div>
+  </div>
+
+  <div class="section-sub">💰 NEA Member Benefits</div>
+  <div class="card info">
+    <p style="font-size:0.87rem;color:#c9d1d9;line-height:1.7;">
+      <strong>NEA Member #0012467549</strong><br/>
+      Savings Dollars ✅ apply to car rentals (can partially offset campervan cost — check if applicable)<br/>
+      Savings Dollars ❌ do NOT apply to airfare<br/>
+      Guided Iceland tours available through NEA Travel<br/>
+      Phone: 1-866-524-2807 · neamb.com/products/travel
+    </p>
+  </div>
+</div>
+
+<script>
+  function showTab(id, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    var tab = document.getElementById('tab-' + id);
+    if (tab) tab.classList.add('active');
+    var b = btn || document.querySelector('nav button[data-tab="' + id + '"]');
+    if (b) {
+      b.classList.add('active');
+      b.scrollIntoView({inline: 'center', block: 'nearest'});
+    }
+    window.scrollTo(0, 0);
+    if (id === 'map') initMap();
+    if (id === 'ideas') buildIdeas();
+    if (id === 'city') initCityMap();
+  }
+
+  // "Today" banner — shows where you are if viewed during the trip
+  (function () {
+    var plan = {
+      '2026-08-02': ['✈️ Depart PDX', 'Fly PDX → SEA → KEF overnight. Alaska CZTRUB / Icelandair BFD2GQ.'],
+      '2026-08-03': ['🛬 Arrive KEF · 🏨 Vintage Apartment Hotel', 'Land 9:25 AM. Self-service check-in (booking #86746010).'],
+      '2026-08-04': ['🚐 Collect Camper', 'CozyCampers pickup noon — Kársnesbraut 106, Kópavogur. Code GYP9GK.'],
+      '2026-08-05': ['🚐 Open day — camper', 'Heading west toward Snæfellsnes.'],
+      '2026-08-06': ['🚐 Open day — camper', 'West Iceland / Snæfellsnes.'],
+      '2026-08-07': ['🚐 Open day — camper', 'Snæfellsnes peninsula.'],
+      '2026-08-08': ['🚐 Open day — camper', 'Snæfellsnes peninsula.'],
+      '2026-08-09': ['🚐 Open day — camper', 'Snæfellsnes peninsula.'],
+      '2026-08-10': ['🚐 Open day — camper', 'Snæfellsnes peninsula.'],
+      '2026-08-11': ['🏕️ Check in — Eldborg Campsite at Snorrastaðir', 'Check in after 3 PM. Reservation #36-532-18003-341978.'],
+      '2026-08-12': ['☀️🌑 ECLIPSE DAY', 'Totality 5:44 PM · ~2m07s. Filter ON for partials, OFF for totality, back ON immediately after.'],
+      '2026-08-13': ['🚐 Drop camper · 🏨 Check in Reykjavik Lights', 'Campsite checkout before noon. Camper dropoff noon, Kópavogur. Hotel check-in 15:00. Conf. 0348Z4PQO.'],
+      '2026-08-14': ['🏨 Reykjavik Lights — hotel day', 'Second night at hotel. No camper. Explore Reykjavik on foot.'],
+      '2026-08-15': ['🏨 Checkout · ✈️ Fly home KEF → PDX', 'Checkout by 11:00. KEF departs 10:40 AM — be at airport ~8:30 AM.']
+    };
+    function localISO(d) {
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+    var key = localISO(new Date());
+    var banner = document.getElementById('today-banner');
+    if (plan[key]) {
+      banner.querySelector('.today-date').textContent = 'Today · ' + new Date(key + 'T00:00').toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'});
+      banner.querySelector('.today-title').textContent = plan[key][0];
+      banner.querySelector('.today-detail').textContent = plan[key][1];
+      banner.style.display = 'block';
+    }
+  })();
+
+  // Open a tab from the URL hash (e.g. dashboard.html#map) — lets the launcher deep-link
+  (function () {
+    var h = (location.hash || '').replace('#', '');
+    if (h && document.getElementById('tab-' + h)) {
+      var btn = document.querySelector('nav button[data-tab="' + h + '"]');
+      showTab(h, btn);
+    }
+  })();
+
+  // ─── Shared place data (single source of truth for Map + Ideas) ───────────
+  var POI = [], YOGA = [], CITY = [];
+  function loadPlaces() {
+    if (POI.length) return;
+    POI = [
+      { name: '🛁 Krauma Baths', t: 'Hot spring', lat: 64.676, lng: -21.410, d: 'Geothermal baths at Deildartunguhver.' },
+      { name: '💧 Hraunfossar & Barnafoss', t: 'Waterfall', lat: 64.702, lng: -20.978, d: 'Lava-field waterfalls, 10 min from Krauma.' },
+      { name: '🏔️ Snæfellsjökull Glacier Hike', t: 'Hike', lat: 64.808, lng: -23.775, d: 'Guided hike, western tip of Snæfellsnes.' },
+      { name: '🦜 Arnarstapi', t: 'Hike / sights', lat: 64.763, lng: -23.622, d: 'Coastal hike, puffins & sea arches.' },
+      { name: '⛰️ Kirkjufell Mountain', t: 'Sights', lat: 64.927, lng: -23.305, d: 'Iconic peak + waterfall.' },
+      { name: '🦭 Ytri-Tunga Seal Beach', t: 'Sights', lat: 64.852, lng: -23.050, d: 'Harbour seals on the rocks.' },
+      { name: '🛁 Sky Lagoon', t: 'Spa', lat: 64.118, lng: -21.943, d: 'Oceanside lagoon, Kópavogur.' },
+      { name: '🏞️ Þingvellir National Park', t: 'Sights', lat: 64.255, lng: -21.130, d: 'UNESCO rift valley, first Icelandic parliament.' },
+      { name: '🍅 Friðheimar', t: 'Eat', lat: 64.126, lng: -20.935, d: 'Tomato-greenhouse restaurant, Golden Circle.' },
+      { name: '♨️ Secret Lagoon (Flúðir)', t: 'Hot spring', lat: 64.137, lng: -20.310, d: 'Natural hot spring pool in Flúðir.' },
+      { name: '🌿 Gjáin Gorge', t: 'Sights / hike', lat: 64.176, lng: -19.875, d: 'Lush gorge with waterfalls, Þjórsárdalur.' },
+      { name: '💧 Seljalandsfoss', t: 'Waterfall', lat: 63.616, lng: -19.989, d: 'Waterfall you can walk behind. South coast.' },
+      { name: '💧 Skógafoss', t: 'Waterfall', lat: 63.532, lng: -19.511, d: '60m waterfall. South coast.' },
+      { name: '💧 Kvernufoss', t: 'Waterfall', lat: 63.529, lng: -19.480, d: 'Hidden waterfall by Skógar, walk-behind.' },
+      { name: '🏕️ Skógar Campsite', t: 'Camping', lat: 63.527, lng: -19.510, d: 'Campsite at Skógafoss.' },
+      { name: '🏛️ Skógar Museum', t: 'Sights', lat: 63.523, lng: -19.512, d: 'Folk museum with turf houses; open-air, folk & technical exhibits. By the campsite.' },
+      { name: '🧗 Fimmvörðuháls Trailhead', t: 'Hike', lat: 63.531, lng: -19.510, d: 'Famous hike between glaciers past Magni & Móði craters; starts above Skógafoss.' },
+      { name: '🧊 Sólheimajökull Glacier', t: 'Hike', lat: 63.531, lng: -19.366, d: 'Glacier-hike & ice-climbing spot, ~20 min east of Skógar.' },
+      { name: '✈️ Sólheimasandur Plane Wreck', t: 'Sights', lat: 63.459, lng: -19.364, d: 'DC-3 wreck on black sand; ~45 min walk each way. Near Skógar.' },
+      { name: '🪨 Drangurinn í Drangshlíð', t: 'Sights', lat: 63.531, lng: -19.560, d: 'Folklore "elf rock" with turf houses built against it, just west of Skógar.' },
+      { name: '🏖️ Reynisfjara Black Sand Beach', t: 'Sights', lat: 63.406, lng: -19.044, d: 'Basalt columns, sea stacks. Dangerous sneaker waves.' },
+      { name: '🦜 Dyrhólaey', t: 'Birds / photo', lat: 63.401, lng: -19.127, d: 'Clifftop lighthouse + ocean arch. Puffins evenings. May have seasonal access limits.' },
+      { name: '🏕️ Þakgil Canyon', t: 'Camping / hike', lat: 63.516, lng: -18.860, d: 'Sheltered canyon campsite near Vík.' },
+      { name: '🌿 Eldhraun Lava Field', t: 'Photo', lat: 63.730, lng: -18.230, d: 'Vast moss-covered lava field. Photograph from the road — do not walk on the moss.' },
+      { name: '🗿 Svartifoss', t: 'Photo / hike', lat: 64.027, lng: -16.975, d: 'Waterfall framed by hexagonal basalt columns, Skaftafell. ~30 min hike in.' },
+      { name: '🦜 Ingólfshöfði', t: 'Birds', lat: 63.800, lng: -16.640, d: 'Puffin & seabird headland; guided tractor tour. Tours often end mid-August — confirm.' },
+      { name: '⛰️ Vestrahorn / Stokksnes', t: 'Photo', lat: 64.247, lng: -14.985, d: 'Dramatic peak reflected in black-sand pools near Höfn. Small access fee.' },
+      { name: '🦆 Lake Mývatn', t: 'Birds', lat: 65.600, lng: -17.000, d: 'One of the world\'s richest duck habitats (13 species). North Iceland.' },
+      { name: '💧 Goðafoss', t: 'Photo / waterfall', lat: 65.683, lng: -17.550, d: 'Wide semicircular "Waterfall of the Gods", near Mývatn. North.' },
+      // Mývatn area — sights, eats, camping
+      { name: '🪨 Dimmuborgir', t: 'Sights', lat: 65.591, lng: -16.911, d: 'Otherworldly lava-rock formations & easy walking trails. East of the lake.' },
+      { name: '🌋 Hverfjall Crater', t: 'Hike', lat: 65.602, lng: -16.871, d: 'Huge tephra crater; short steep climb to the rim. By Mývatn.' },
+      { name: '💧 Grjótagjá Cave', t: 'Sights', lat: 65.626, lng: -16.882, d: 'Lava cave with bright-blue geothermal spring (look, no swimming). Near the lake.' },
+      { name: '♨️ Hverir (Námaskarð)', t: 'Sights', lat: 65.640, lng: -16.808, d: 'Boiling mud pots, fumaroles & hissing vents. Overlooked highlight.' },
+      { name: '♨️ Mývatn Nature Baths', t: 'Spa', lat: 65.631, lng: -16.848, d: 'Milky-blue geothermal lagoon, quieter than Blue Lagoon. Café Kvika on site.' },
+      { name: '🌀 Skútustaðagígar Pseudocraters', t: 'Sights', lat: 65.564, lng: -17.038, d: 'Grassy pseudo-craters with easy lakeside walking loops.' },
+      { name: '🕳️ Lofthellir Ice Cave', t: 'Sights', lat: 65.555, lng: -16.700, d: 'Lava cave with natural ice sculptures (guided tour). East of Mývatn.' },
+      { name: '🍕 Daddi\'s Pizza', t: 'Eat', lat: 65.642, lng: -16.913, d: 'Local-favourite pizza in Reykjahlíð, Mývatn.' },
+      { name: '🐄 Vogafjós Farm Resort & Café', t: 'Eat', lat: 65.610, lng: -16.978, d: 'Cowshed café/restaurant by the lake; farm stay too.' },
+      { name: '🏕️ Bjarg Campsite (Mývatn)', t: 'Camping', lat: 65.643, lng: -16.918, d: 'Lakeside campsite in Reykjahlíð with hot tub by the water.' },
+      { name: '🏕️ Vogar Campsite (Mývatn)', t: 'Camping', lat: 65.610, lng: -16.974, d: 'Campsite by Vogafjós on the east side of the lake.' },
+      // Beginner-friendly F-roads (central highlands, not near Mývatn) — 4x4 only, check rental contract
+      { name: '🛣️ F35 Kjölur', t: 'Highland road', lat: 64.700, lng: -19.600, d: 'Easiest highland route (Gullfoss→Blönduós), no major river crossings. Hveravellir hot spring midway. 4x4 only — confirm CozyCampers allows F-roads.' },
+      { name: '♨️ Hveravellir', t: 'Hot spring', lat: 64.866, lng: -19.563, d: 'Geothermal oasis + campsite midway on F35 Kjölur. 4x4 only.' },
+      { name: '🛣️ F347 Kerlingarfjöll', t: 'Highland road', lat: 64.640, lng: -19.300, d: 'One of the easiest marked F-roads, no river crossings. To Kerlingarfjöll. 4x4 only — check contract.' },
+      { name: '🧊 Jökulsárlón & Diamond Beach', t: 'Sights', lat: 64.048, lng: -16.179, d: 'Glacier lagoon + icebergs on black sand. Far SE.' },
+      { name: '🏞️ Múlagljúfur Canyon', t: 'Hike', lat: 64.018, lng: -16.375, d: 'Dramatic canyon hike near Jökulsárlón.' },
+      { name: '🏘️ Seyðisfjörður', t: 'Town', lat: 65.262, lng: -14.012, d: 'Eastfjords town, rainbow street. Very far east.' },
+      { name: '🏘️ Borgarnes', t: 'Town', lat: 64.538, lng: -21.918, d: 'West Iceland town, Settlement Centre.' },
+      { name: '🛣️ F550 Kaldidalur Pass', t: 'Highland road', lat: 64.620, lng: -20.800, d: 'Highland route between Þingvellir & Húsafell.' },
+      { name: '🛣️ F208 / Landmannalaugar', t: 'Highland road', lat: 63.983, lng: -19.063, d: 'Highland route to Landmannalaugar.' },
+      { name: '🏕️ Landmannalaugar Campsite', t: 'Camping / hike', lat: 63.983, lng: -19.063, d: 'Highland hub, hot springs, hiking.' },
+      { name: '🍴 Icelandic Street Food', t: 'Eat', lat: 64.147, lng: -21.939, d: 'Soup & traditional dishes, central Reykjavik.' },
+      { name: '🍴 Íslenski Barinn', t: 'Eat', lat: 64.147, lng: -21.938, d: 'Icelandic pub fare, central Reykjavik.' },
+      { name: '🥐 Brauð & Co', t: 'Bakery', lat: 64.146, lng: -21.927, d: 'Famous bakery, Frakkastígur.' },
+      { name: '🍴 Litli Barinn', t: 'Eat', lat: 64.146, lng: -21.933, d: 'Small bar/eatery, central Reykjavik.' },
+      { name: '🧇 Vöffluvagninn', t: 'Eat', lat: 64.148, lng: -21.933, d: 'Waffle wagon, Reykjavik.' },
+      { name: "🍴 Mia's Country Grill", t: 'Eat', lat: 63.749, lng: -18.380, d: 'Roadside grill, Vík area (south coast).' },
+      { name: '🍴 Settlement Center Restaurant', t: 'Eat', lat: 64.538, lng: -21.922, d: 'Restaurant at Borgarnes Settlement Centre.' },
+      { name: '🍴 Bjargarsteinn Mathús', t: 'Eat', lat: 64.922, lng: -23.260, d: 'Seafood restaurant, Grundarfjörður (Snæfellsnes).' },
+      { name: '🍴 Pakkhús Restaurant', t: 'Eat', lat: 64.252, lng: -15.207, d: 'Langoustine restaurant, Höfn (SE).' },
+      { name: '🍺 Smiðjan Brugghús', t: 'Eat / brewpub', lat: 64.252, lng: -15.210, d: 'Brewpub, Höfn (SE).' },
+      { name: '🛁 Blue Lagoon', t: 'Spa', lat: 63.880, lng: -22.449, d: 'Geothermal spa, Reykjanes (near KEF).' },
+      { name: '🏖️ Nauthólsvík', t: 'Hot spring', lat: 64.123, lng: -21.949, d: 'Geothermal beach & lagoon, Reykjavik.' },
+      { name: '💧 Waterfall Way (above Skógafoss)', t: 'Hike', lat: 63.548, lng: -19.495, d: 'Skógá river trail past 20+ waterfalls above Skógafoss.' },
+      { name: '🪨 Gatklettur & Arnarstapi Cliff Walk', t: 'Hike', lat: 64.768, lng: -23.625, d: 'Stone arch & coastal cliff walk, Snæfellsnes.' },
+      { name: '🏘️ Hveragerði', t: 'Town', lat: 64.000, lng: -21.190, d: 'Geothermal town SE of Reykjavik; Reykjadalur hot river hike.' },
+      { name: '🐴 Efstidalur II Horse Farm', t: 'Eat / farm', lat: 64.231, lng: -20.405, d: 'Farm, dairy & restaurant, Golden Circle.' },
+      { name: '🍴 Halldórskaffi', t: 'Eat', lat: 63.418, lng: -19.008, d: 'Restaurant in Vík (south coast).' },
+      { name: '🍴 Matarlist', t: 'Eat', lat: 64.146, lng: -21.940, d: 'Eatery, Reykjavik.' },
+      { name: '♨️ Hvammsvík Hot Springs', t: 'Hot spring', lat: 64.360, lng: -21.490, d: 'Oceanside geothermal pools, Hvalfjörður.' },
+      { name: '♨️ Landbrotalaug Hot Pot', t: 'Hot spring', lat: 64.823, lng: -22.300, d: 'Tiny natural hot pot, Snæfellsnes (near base).' }
+    ];
+    YOGA = [
+      { name: '🧘 Reykjavik Yoga', t: 'Yoga', lat: 64.146, lng: -21.927, d: 'Central Reykjavik (location approximate).' },
+      { name: '🧘 REYR Yoga Studio', t: 'Yoga', lat: 64.143, lng: -21.926, d: 'Reykjavik (location approximate).' },
+      { name: '🧘 Iceland Power Yoga', t: 'Yoga', lat: 64.140, lng: -21.930, d: 'Reykjavik (location approximate).' },
+      { name: '🧘 Yoga Shala Reykjavík', t: 'Yoga', lat: 64.144, lng: -21.918, d: 'Reykjavik (location approximate).' }
+    ];
+    // City-only spots (downtown Reykjavik) — food/coffee + sights/culture
+    CITY = [
+      // Food & coffee
+      { name: '🥐 Sandholt Bakery', t: 'Bakery', lat: 64.144, lng: -21.929, d: 'Beloved bakery & café on Laugavegur.' },
+      { name: '☕ Reykjavík Roasters', t: 'Coffee', lat: 64.142, lng: -21.927, d: 'Specialty coffee roaster, Kárastígur.' },
+      { name: '🌭 Bæjarins Beztu Pylsur', t: 'Eat', lat: 64.148, lng: -21.939, d: 'Iconic hot dog stand near the harbour.' },
+      { name: '🍴 Grandi Mathöll', t: 'Eat', lat: 64.155, lng: -21.949, d: 'Food hall at the old harbour (Grandi).' },
+      { name: '🍴 Hlemmur Mathöll', t: 'Eat', lat: 64.143, lng: -21.915, d: 'Food hall at Hlemmur square.' },
+      { name: '🍴 Sægreifinn (Sea Baron)', t: 'Eat', lat: 64.151, lng: -21.943, d: 'Lobster soup & fish skewers, old harbour.' },
+      { name: '🍦 Valdís Ice Cream', t: 'Eat', lat: 64.155, lng: -21.948, d: 'Popular ice-cream shop, Grandi.' },
+      { name: '☕ Kaffibrennslan', t: 'Coffee', lat: 64.146, lng: -21.933, d: 'Café on Laugavegur.' },
+      // Sights & culture
+      { name: '⛪ Hallgrímskirkja', t: 'Sights', lat: 64.142, lng: -21.927, d: 'Landmark church; tower has city views.' },
+      { name: '🎶 Harpa Concert Hall', t: 'Sights', lat: 64.150, lng: -21.933, d: 'Glass concert hall on the waterfront.' },
+      { name: '⛵ Sun Voyager (Sólfar)', t: 'Sights', lat: 64.148, lng: -21.922, d: 'Steel ship sculpture on the seafront path.' },
+      { name: '🌀 Perlan', t: 'Sights', lat: 64.129, lng: -21.919, d: 'Glass dome museum & viewing deck (ice cave, planetarium).' },
+      { name: '🏛️ National Museum of Iceland', t: 'Sights', lat: 64.142, lng: -21.948, d: 'Iceland\'s history from settlement to today.' },
+      { name: '🏛️ Settlement Exhibition', t: 'Sights', lat: 64.147, lng: -21.941, d: 'Viking-age longhouse ruins, Aðalstræti.' },
+      { name: '🌈 Rainbow Street (Skólavörðustígur)', t: 'Sights', lat: 64.143, lng: -21.926, d: 'Painted street leading up to Hallgrímskirkja.' },
+      { name: '🛍️ Laugavegur', t: 'Sights', lat: 64.144, lng: -21.928, d: 'Main shopping & strolling street downtown.' },
+      { name: '🏊 Laugardalslaug Pool', t: 'Pool', lat: 64.139, lng: -21.879, d: 'Largest geothermal pool in Reykjavik; hot tubs. ~5 min walk from Reykjavik Lights.' },
+      { name: '🏊 Vesturbæjarlaug Pool', t: 'Pool', lat: 64.146, lng: -21.957, d: 'Local-favourite neighbourhood geothermal pool.' },
+      // Near Reykjavik Lights — Laugardalur / Suðurlandsbraut
+      { name: '🌳 Laugardalur Park', t: 'Sights', lat: 64.142, lng: -21.876, d: 'Green park by the hotel — paths, sports, family park & zoo.' },
+      { name: '🌿 Botanical Garden (Grasagarður)', t: 'Sights', lat: 64.143, lng: -21.873, d: 'Free botanical garden in Laugardalur, ~10 min walk.' },
+      { name: '🦌 Reykjavik Family Park & Zoo', t: 'Sights', lat: 64.140, lng: -21.871, d: 'Húsdýragarðurinn — Icelandic animals & family park, Laugardalur.' },
+      { name: '🗿 Ásmundarsafn Sculpture Museum', t: 'Sights', lat: 64.140, lng: -21.882, d: 'Ásmundur Sveinsson sculpture museum & garden, near the hotel.' },
+      { name: '☕ Café Flóra', t: 'Coffee', lat: 64.143, lng: -21.873, d: 'Café inside the Botanical Garden greenhouse.' },
+      { name: '🍴 Krónan / Suðurlandsbraut eateries', t: 'Eat', lat: 64.138, lng: -21.893, d: 'Restaurants & grocery along Suðurlandsbraut by the hotel.' },
+      { name: '🥐 Brauð & Co (Suðurver)', t: 'Bakery', lat: 64.133, lng: -21.882, d: 'Bakery branch near the hotel (Suðurver).' }
+    ];
+  }
+
+  // Build the Ideas list from the same data the map uses
+  function buildIdeas() {
+    loadPlaces();
+    var host = document.getElementById('ideas-list');
+    if (!host || host.dataset.built) return;
+    host.dataset.built = '1';
+    var groups = {};
+    POI.concat(YOGA).concat(CITY).forEach(function (p) {
+      var key = (p.t || 'Other').split(' / ')[0];
+      (groups[key] = groups[key] || []).push(p);
+    });
+    var order = ['Eat','Bakery','Coffee','Hot spring','Spa','Pool','Waterfall','Photo','Birds','Hike','Sights','Camping','Town','Highland road','Farm','Yoga','Other'];
+    var keys = Object.keys(groups).sort(function (a,b) {
+      var ia = order.indexOf(a), ib = order.indexOf(b);
+      return (ia<0?99:ia) - (ib<0?99:ib);
+    });
+    var html = '';
+    keys.forEach(function (k) {
+      html += '<div class="section-sub">' + k + '</div>';
+      groups[k].forEach(function (p) {
+        html += '<div class="stay-card"><div class="stay-info"><h4>' + p.name + '</h4><p>' + p.d + '</p></div></div>';
+      });
+    });
+    host.innerHTML = html;
+  }
+
+  // ─── Map tab (lazy init — Leaflet needs a visible container) ───────────────
+  var _mapReady = false;
+  function initMap() {
+    if (_mapReady || typeof L === 'undefined') return;
+    _mapReady = true;
+    loadPlaces();
+
+    var map = L.map('map', { center: [64.55, -22.4], zoom: 8, zoomControl: true });
+    var base = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap, © CARTO', subdomains: 'abcd', maxZoom: 19
+    }).addTo(map);
+    var errs = 0;
+    base.on('tileerror', function () {
+      errs++;
+      if (errs === 4) {
+        map.removeLayer(base);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 19 }).addTo(map);
+      }
+    });
+
+    // Path of totality (Aug 12 2026) — Snorrastaðir base sits inside it
+    L.polygon([[65.45,-24.6],[65.05,-21.0],[64.30,-20.4],[64.05,-23.9]], {
+      color: '#dc2626', fillColor: '#dc2626', fillOpacity: 0.10, weight: 1.5, opacity: 0.5, dashArray: '6 5'
+    }).addTo(map).bindTooltip('🌑 Path of totality — Aug 12, 2026', { sticky: true });
+
+    var confirmed = [
+      { name: '✈ KEF Airport', lat: 63.986, lng: -22.605, c: '#4a9e8a', d: 'Arrive 9:25 AM Aug 3 · Depart 10:40 AM Aug 15.' },
+      { name: '🏨 Vintage Apartment Hotel', lat: 64.146, lng: -21.927, c: '#4a9e8a', d: 'Arrival night Aug 3. Booking #86746010.' },
+      { name: '🚐 CozyCampers — pickup & dropoff', lat: 64.106, lng: -21.913, c: '#4a9e8a', d: 'Highlander I. Kársnesbraut 106, Kópavogur. Pickup noon Aug 4, dropoff noon Aug 13. Code GYP9GK.' },
+      { name: '🌑 Eldborg at Snorrastaðir — Eclipse Base', lat: 64.825, lng: -22.330, c: '#dc2626', d: 'Confirmed campsite, Aug 11–13. Reservation #36-532-18003-341978. Totality Aug 12, 5:44 PM, ~2m07s.', big: true },
+      { name: '🏨 Reykjavik Lights by KEA', lat: 64.139, lng: -21.890, c: '#d97706', d: 'Final two nights, Aug 13–15. Confirmation 0348Z4PQO.' }
+    ];
+
+    POI.forEach(function (p) {
+      L.marker([p.lat, p.lng], { icon: L.divIcon({
+        html: '<div style="width:11px;height:11px;border-radius:50%;background:#a855f7;border:2px solid #fff;opacity:0.85"></div>',
+        className: '', iconAnchor: [7,7]
+      })}).addTo(map).bindPopup('<div class="pop-t">'+p.name+'</div><div class="pop-cat">'+p.t+'</div><div class="pop-d">'+p.d+'</div>', { maxWidth: 240 });
+    });
+
+    YOGA.forEach(function (y) {
+      L.marker([y.lat, y.lng], { icon: L.divIcon({
+        html: '<div style="width:11px;height:11px;border-radius:50%;background:#22d3ee;border:2px solid #fff;opacity:0.9"></div>',
+        className: '', iconAnchor: [7,7]
+      })}).addTo(map).bindPopup('<div class="pop-t">'+y.name+'</div><div class="pop-cat">'+y.t+'</div><div class="pop-d">'+y.d+'</div>', { maxWidth: 240 });
+    });
+
+    confirmed.forEach(function (s) {
+      var sz = s.big ? 22 : 16;
+      L.marker([s.lat, s.lng], { icon: L.divIcon({
+        html: '<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:'+s.c+';border:'+(s.big?'3px solid #fbbf24':'2px solid #fff')+';box-shadow:0 0 '+(s.big?'12px '+s.c:'6px rgba(0,0,0,0.5)')+'"></div>',
+        className: '', iconAnchor: [sz/2, sz/2]
+      })}).addTo(map).bindPopup('<div class="pop-t">'+s.name+'</div><div class="pop-d">'+s.d+'</div>', { maxWidth: 250 });
+    });
+
+    setTimeout(function () { map.invalidateSize(); }, 100);
+  }
+
+  // ─── City tab (zoomed Reykjavik / capital area) ───────────────────────────
+  var _cityReady = false;
+  function catColor(t) {
+    var k = (t || '').split(' / ')[0];
+    if (k === 'Eat' || k === 'Bakery' || k === 'Coffee') return '#f59e0b';
+    if (k === 'Sights' || k === 'Town') return '#58a6ff';
+    if (k === 'Pool' || k === 'Spa' || k === 'Hot spring') return '#3fb950';
+    if (k === 'Yoga') return '#22d3ee';
+    return '#a855f7';
+  }
+  function initCityMap() {
+    if (_cityReady || typeof L === 'undefined') return;
+    _cityReady = true;
+    loadPlaces();
+
+    var cmap = L.map('citymap', { center: [64.140, -21.920], zoom: 12, zoomControl: true });
+    var cbase = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap, © CARTO', subdomains: 'abcd', maxZoom: 19
+    }).addTo(cmap);
+    var ce = 0;
+    cbase.on('tileerror', function () {
+      ce++;
+      if (ce === 4) {
+        cmap.removeLayer(cbase);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 19 }).addTo(cmap);
+      }
+    });
+
+    // Capital region bounding box — pulls existing points that fall here
+    function inCity(p) { return p.lat > 63.78 && p.lat < 64.22 && p.lng > -22.75 && p.lng < -21.55; }
+    var pts = CITY.concat(POI.filter(inCity)).concat(YOGA.filter(inCity));
+
+    pts.forEach(function (p) {
+      var col = catColor(p.t);
+      L.marker([p.lat, p.lng], { icon: L.divIcon({
+        html: '<div style="width:12px;height:12px;border-radius:50%;background:' + col + ';border:2px solid #fff;opacity:0.9"></div>',
+        className: '', iconAnchor: [7,7]
+      })}).addTo(cmap).bindPopup('<div class="pop-t">'+p.name+'</div><div class="pop-cat">'+p.t+'</div><div class="pop-d">'+p.d+'</div>', { maxWidth: 240 });
+    });
+
+    // Confirmed hotels — larger green-ringed pins, on top
+    var cityHotels = [
+      { name: '🏨 Vintage Apartment Hotel', lat: 64.146, lng: -21.927, d: 'Arrival night, Aug 3. Booking #86746010 · Deluxe Studio.' },
+      { name: '🏨 Reykjavik Lights by KEA', lat: 64.139, lng: -21.890, d: 'Final nights, Aug 13–15. Confirmation 0348Z4PQO · Suðurlandsbraut 12.' }
+    ];
+    cityHotels.forEach(function (h) {
+      L.marker([h.lat, h.lng], { icon: L.divIcon({
+        html: '<div style="width:18px;height:18px;border-radius:50%;background:#3fb950;border:3px solid #fff;box-shadow:0 0 8px #3fb950"></div>',
+        className: '', iconAnchor: [9,9]
+      })}).addTo(cmap).bindPopup('<div class="pop-t">'+h.name+'</div><div class="pop-cat">Hotel · Confirmed</div><div class="pop-d">'+h.d+'</div>', { maxWidth: 250 });
+    });
+
+    setTimeout(function () { cmap.invalidateSize(); }, 100);
+  }
+</script>
+
+</body>
+</html>
